@@ -16,6 +16,20 @@ export const MEMO_TYPES = {
   RELEASE: "pulse/release",
 } as const;
 
+export interface MemoData {
+  memoType: string;
+  memoData: string;
+}
+
+export function decodeMemos(
+  memos: Array<{ Memo: { MemoType?: string; MemoData?: string } }>
+): MemoData[] {
+  return memos.map(({ Memo }) => ({
+    memoType: Memo.MemoType ? fromHex(Memo.MemoType) : "",
+    memoData: Memo.MemoData ? fromHex(Memo.MemoData) : "",
+  }));
+}
+
 const LEDGER_OFFSET_STANDARD = 20;
 const LEDGER_OFFSET_MULTISIGN = 75;
 
