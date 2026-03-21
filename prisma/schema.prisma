@@ -43,6 +43,8 @@ model Member {
   contributions Contribution[]
 
   @@unique([fundId, walletAddress])
+  @@index([walletAddress])
+  @@index([fundId])
 }
 
 model Contribution {
