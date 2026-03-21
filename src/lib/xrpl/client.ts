@@ -61,6 +61,13 @@ function setupAutoReconnect(c: Client): void {
   });
 }
 
+export async function withClient<T>(
+  fn: (client: Client) => Promise<T>
+): Promise<T> {
+  const c = await getClient();
+  return fn(c);
+}
+
 export function isClientConnected(): boolean {
   return client !== null && client.isConnected();
 }
