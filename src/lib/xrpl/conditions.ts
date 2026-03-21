@@ -1,20 +1,5 @@
 import { randomBytes, createHash } from "crypto";
 
-/**
- * PREIMAGE-SHA-256 crypto-condition per RFC draft-thomas-crypto-conditions.
- *
- * Condition format (DER-encoded):
- *   Tag: A0 (PREIMAGE-SHA-256 type)
- *   Length: 22 (34 bytes payload)
- *   Fingerprint tag: 80, length: 20 (32 bytes SHA-256 hash)
- *   MaxFulfillmentLength tag: 81, length: 01, value: 20 (32 bytes)
- *
- * Fulfillment format (DER-encoded):
- *   Tag: A0 (PREIMAGE-SHA-256 type)
- *   Length: 22 (34 bytes payload)
- *   Preimage tag: 80, length: 20 (32 bytes preimage)
- */
-
 const PREIMAGE_SIZE = 32;
 
 export interface ConditionFulfillment {
