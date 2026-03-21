@@ -45,3 +45,7 @@ export interface CancelEscrowParams {
 export interface CancelEscrowResult {
   txHash: string;
 }
+
+function unixToRippleTime(unixSeconds: number): number {
+  return unixSeconds - RIPPLE_EPOCH_OFFSET;
+}
