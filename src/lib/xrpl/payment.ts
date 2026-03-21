@@ -132,6 +132,9 @@ export async function buildReleaseTx(
 ): Promise<Payment> {
   validateAddress(params.fundWalletAddress, "fund wallet");
   validateAddress(params.recipientAddress, "recipient");
+  if (params.fundWalletAddress === params.recipientAddress) {
+    throw new Error("Fund wallet and recipient addresses must be different");
+  }
   validateAmount(params.amountDrops);
 
   const client = await getClient();
