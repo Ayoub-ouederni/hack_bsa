@@ -115,6 +115,57 @@ export async function getAvailableBalance(address: string): Promise<number> {
   return Math.max(0, balance - reserve);
 }
 
+export interface EscrowInfo {
+  account: string;
+  destination: string;
+  amount: string;
+  condition?: string;
+  cancelAfter?: number;
+  finishAfter?: number;
+  sequence: number;
+}
+
+export async function getEscrows(
+  address: string
+): Promise<EscrowInfo[]> {
+  let response;
+  try {
+    const client = await getClient();
+    response = await client.request({
+      command: "account_objects",
+      account: address,
+      type: "escrow",
+      ledger_index: "validated",
+    });
+  } catch (error) {
+    if (isAccountNotFound(error)) {
+      return [];
+    }
+    throw error;
+  }
+
+  return response.result.account_objects.map((obj) => {
+    const escrow = obj as AccountObjectsResponse["result"]["account_objects"][0] & {
+      Account: string;
+      Destination: string;
+      Amount: string;
+      Condition?: string;
+      CancelAfter?: number;
+      FinishAfter?: number;
+      Sequence: number;
+    };
+    return {
+      account: escrow.Account,
+      destination: escrow.Destination,
+      amount: escrow.Amount,
+      condition: escrow.Condition,
+      cancelAfter: escrow.CancelAfter,
+      finishAfter: escrow.FinishAfter,
+      sequence: escrow.Sequence,
+    };
+  });
+}
+
 export async function getSignerList(
   address: string
 ): Promise<SignerListInfo | null> {
