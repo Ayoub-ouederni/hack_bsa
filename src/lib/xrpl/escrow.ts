@@ -147,3 +147,17 @@ export async function createEscrow(
     txHash: result.result.hash,
   };
 }
+
+export async function buildEscrowFinishTx(
+  params: BuildEscrowFinishParams
+): Promise<EscrowFinish> {
+  validateAddress(params.ownerAddress, "owner");
+
+  if (!isValidConditionHex(params.conditionHex)) {
+    throw new Error("Invalid condition hex format");
+  }
+
+  if (!isValidFulfillmentHex(params.fulfillmentHex)) {
+    throw new Error("Invalid fulfillment hex format");
+  }
+}
