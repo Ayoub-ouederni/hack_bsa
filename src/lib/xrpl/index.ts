@@ -88,6 +88,7 @@ export {
   rippleTimeToUnix,
   rippleTimeToDate,
   isEscrowExpired,
+  getEscrowTimeRemaining,
 } from "./escrow";
 
 export type {
