@@ -43,6 +43,36 @@ export async function getAccountInfo(
   return response.result;
 }
 
+export async function getTxHistory(
+  address: string,
+  limit: number = 20
+): Promise<TxHistoryEntry[]> {
+  const client = await getClient();
+  const response = await client.request({
+    command: "account_tx",
+    account: address,
+    limit,
+  });
+
+  return response.result.transactions.map((tx) => {
+    const txData = tx.tx_json ?? {};
+    return {
+      hash: ("hash" in tx ? tx.hash : txData.hash) ?? "",
+      type: ("TransactionType" in txData ? txData.TransactionType : "") ?? "",
+      account: ("Account" in txData ? txData.Account : "") ?? "",
+      destination:
+        "Destination" in txData ? (txData.Destination as string) : undefined,
+      amount:
+        "Amount" in txData && typeof txData.Amount === "string"
+          ? txData.Amount
+          : undefined,
+      fee: ("Fee" in txData ? txData.Fee : "0") ?? "0",
+      date: "date" in txData ? (txData.date as number) : undefined,
+      validated: tx.validated,
+    };
+  });
+}
+
 export async function getSignerList(
   address: string
 ): Promise<SignerListInfo | null> {
