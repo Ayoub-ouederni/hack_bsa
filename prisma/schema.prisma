@@ -23,6 +23,8 @@ model Fund {
 
   members  Member[]
   requests Request[]
+
+  @@index([organizerAddress])
 }
 
 model Member {
