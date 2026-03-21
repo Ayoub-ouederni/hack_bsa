@@ -38,12 +38,15 @@ model Member {
   nftTokenId       String?
   joinedAt         DateTime  @default(now())
 
+  contributions Contribution[]
+
   @@unique([fundId, walletAddress])
 }
 
 model Contribution {
   id        String   @id @default(cuid())
   memberId  String
+  member    Member   @relation(fields: [memberId], references: [id])
   amount    Int
   txHash    String   @unique
   createdAt DateTime @default(now())
