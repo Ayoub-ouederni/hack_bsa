@@ -35,3 +35,9 @@ export interface BuildEscrowFinishParams {
   fulfillmentHex: string;
   signerCount?: number;
 }
+
+export interface CancelEscrowParams {
+  fundWalletSeed: string;
+  ownerAddress: string;
+  escrowSequence: number;
+}
