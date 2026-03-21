@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getClient, getXrplUrl } from "@/lib/xrpl/client";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const url = getXrplUrl();
   const network = process.env.NEXT_PUBLIC_XRPL_NETWORK ?? "testnet";
