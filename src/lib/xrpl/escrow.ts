@@ -14,3 +14,11 @@ const LEDGER_OFFSET_ESCROW_FINISH = 75;
 const DEFAULT_ESCROW_EXPIRY_SECONDS = 600;
 
 const OWNER_RESERVE_DROPS = 2_000_000;
+
+export interface CreateEscrowParams {
+  fundWalletSeed: string;
+  recipientAddress: string;
+  amountDrops: number;
+  conditionHex: string;
+  cancelAfterSeconds?: number;
+}
