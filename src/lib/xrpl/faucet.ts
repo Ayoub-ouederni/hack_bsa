@@ -28,3 +28,17 @@ export async function fundExistingWallet(
   const result = await client.fundWallet(wallet, { amount });
   return { wallet: result.wallet, balance: result.balance };
 }
+
+export interface WalletInfo {
+  address: string;
+  seed: string;
+  publicKey: string;
+}
+
+export function getWalletInfo(wallet: Wallet): WalletInfo {
+  return {
+    address: wallet.classicAddress,
+    seed: wallet.seed ?? "",
+    publicKey: wallet.publicKey,
+  };
+}
