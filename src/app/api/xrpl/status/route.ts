@@ -23,6 +23,7 @@ export async function GET() {
     return NextResponse.json(
       {
         status: "error",
+        network,
         url,
         error: error instanceof Error ? error.message : "Unknown error",
       },
