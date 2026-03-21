@@ -42,6 +42,19 @@ export function buildMemo(
   };
 }
 
+export function isContributionMemo(memos: MemoData[]): boolean {
+  return memos.some((m) => m.memoType === MEMO_TYPES.CONTRIBUTION);
+}
+
+export function isReleaseMemo(memos: MemoData[]): boolean {
+  return memos.some((m) => m.memoType === MEMO_TYPES.RELEASE);
+}
+
+export function extractMemoId(memos: MemoData[], type: string): string | null {
+  const memo = memos.find((m) => m.memoType === type);
+  return memo?.memoData ?? null;
+}
+
 const LEDGER_OFFSET_STANDARD = 20;
 const LEDGER_OFFSET_MULTISIGN = 75;
 
