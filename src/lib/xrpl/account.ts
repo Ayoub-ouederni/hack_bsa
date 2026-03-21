@@ -31,3 +31,35 @@ export async function getAccountInfo(
   });
   return response.result;
 }
+
+export async function getSignerList(
+  address: string
+): Promise<SignerListInfo | null> {
+  const client = await getClient();
+  const response = await client.request({
+    command: "account_objects",
+    account: address,
+    type: "signer_list",
+    ledger_index: "validated",
+  });
+
+  const signerLists = response.result.account_objects;
+  if (signerLists.length === 0) {
+    return null;
+  }
+
+  const list = signerLists[0] as AccountObjectsResponse["result"]["account_objects"][0] & {
+    SignerQuorum: number;
+    SignerEntries: Array<{
+      SignerEntry: { Account: string; SignerWeight: number };
+    }>;
+  };
+
+  return {
+    signerQuorum: list.SignerQuorum,
+    signerEntries: list.SignerEntries.map((entry) => ({
+      account: entry.SignerEntry.Account,
+      signerWeight: entry.SignerEntry.SignerWeight,
+    })),
+  };
+}
