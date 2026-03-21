@@ -1,6 +1,7 @@
 import type { Payment } from "xrpl";
 import { isValidClassicAddress } from "xrpl";
 import { getClient } from "./client";
+import { getAccountSequence } from "./account";
 
 export function toHex(text: string): string {
   return Buffer.from(text, "utf-8").toString("hex").toUpperCase();
@@ -87,6 +88,7 @@ export async function buildReleaseTx(
   const baseFee = 12;
   const signerCount = params.signerCount ?? 1;
   const fee = String(baseFee * (1 + signerCount));
+  const sequence = await getAccountSequence(params.fundWalletAddress);
 
   const tx: Payment = {
     TransactionType: "Payment",
@@ -94,6 +96,7 @@ export async function buildReleaseTx(
     Destination: params.recipientAddress,
     Amount: String(params.amountDrops),
     Fee: fee,
+    Sequence: sequence,
     Memos: [
       {
         Memo: {
