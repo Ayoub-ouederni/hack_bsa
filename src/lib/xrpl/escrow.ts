@@ -60,3 +60,9 @@ function getEscrowExpirySeconds(): number {
   }
   return DEFAULT_ESCROW_EXPIRY_SECONDS;
 }
+
+function validateAddress(address: string, label: string): void {
+  if (!isValidClassicAddress(address)) {
+    throw new Error(`Invalid ${label} address: ${address}`);
+  }
+}
