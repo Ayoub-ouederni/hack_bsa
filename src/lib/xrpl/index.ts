@@ -86,3 +86,11 @@ export {
   cancelEscrow,
   canCreateEscrow,
 } from "./escrow";
+
+export type {
+  CreateEscrowParams,
+  CreateEscrowResult,
+  BuildEscrowFinishParams,
+  CancelEscrowParams,
+  CancelEscrowResult,
+} from "./escrow";
