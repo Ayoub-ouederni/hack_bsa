@@ -24,7 +24,7 @@ export async function verifyFileHash(
   expectedHash: string
 ): Promise<boolean> {
   const actualHash = await hashFile(file);
-  return actualHash === expectedHash.toLowerCase();
+  return constantTimeEqual(actualHash, expectedHash.toLowerCase());
 }
 
 export function bufferToHex(buffer: ArrayBuffer): string {
