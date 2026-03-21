@@ -49,6 +49,14 @@ function setupAutoReconnect(c: Client): void {
   });
 }
 
+export function isClientConnected(): boolean {
+  return client !== null && client.isConnected();
+}
+
+export function getXrplUrl(): string {
+  return XRPL_URL;
+}
+
 export async function disconnectClient(): Promise<void> {
   if (client) {
     await client.disconnect();
