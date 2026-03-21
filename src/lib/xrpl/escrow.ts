@@ -81,6 +81,17 @@ export function isEscrowExpired(cancelAfterRipple: number): boolean {
   return nowRipple >= cancelAfterRipple;
 }
 
+function getTransactionResult(meta: unknown): string | null {
+  if (
+    typeof meta === "object" &&
+    meta !== null &&
+    "TransactionResult" in meta
+  ) {
+    return (meta as { TransactionResult: string }).TransactionResult;
+  }
+  return null;
+}
+
 function validateAddress(address: string, label: string): void {
   if (!isValidClassicAddress(address)) {
     throw new Error(`Invalid ${label} address: ${address}`);
