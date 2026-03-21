@@ -1,7 +1,7 @@
 import type { Payment } from "xrpl";
 import { isValidClassicAddress } from "xrpl";
 import { getClient } from "./client";
-import { getAccountSequence } from "./account";
+import { getAccountSequence, getAvailableBalance } from "./account";
 
 export function toHex(text: string): string {
   return Buffer.from(text, "utf-8").toString("hex").toUpperCase();
@@ -53,6 +53,18 @@ export function isReleaseMemo(memos: MemoData[]): boolean {
 export function extractMemoId(memos: MemoData[], type: string): string | null {
   const memo = memos.find((m) => m.memoType === type);
   return memo?.memoData ?? null;
+}
+
+export async function canAffordContribution(
+  address: string,
+  amountDrops: number
+): Promise<{ canAfford: boolean; availableDrops: number }> {
+  const available = await getAvailableBalance(address);
+  const totalNeeded = amountDrops + 12; // amount + base fee
+  return {
+    canAfford: available >= totalNeeded,
+    availableDrops: available,
+  };
 }
 
 const LEDGER_OFFSET_STANDARD = 20;
