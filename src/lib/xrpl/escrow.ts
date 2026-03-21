@@ -109,4 +109,17 @@ export async function createEscrow(
   const cancelAfterRipple = unixToRippleTime(
     Math.floor(Date.now() / 1000) + expirySeconds
   );
+
+  const client = await getClient();
+  const currentLedger = await client.getLedgerIndex();
+
+  const tx: EscrowCreate = {
+    TransactionType: "EscrowCreate",
+    Account: wallet.address,
+    Destination: params.recipientAddress,
+    Amount: String(params.amountDrops),
+    Condition: params.conditionHex,
+    CancelAfter: cancelAfterRipple,
+    LastLedgerSequence: currentLedger + LEDGER_OFFSET_ESCROW,
+  };
 }
