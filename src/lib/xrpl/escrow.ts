@@ -138,4 +138,12 @@ export async function createEscrow(
       `EscrowCreate failed: ${meta.TransactionResult}`
     );
   }
+
+  const sequence = (result.result.tx_json as Record<string, unknown>)
+    ?.Sequence as number;
+
+  return {
+    escrowSequence: sequence,
+    txHash: result.result.hash,
+  };
 }
