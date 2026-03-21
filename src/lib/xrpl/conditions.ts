@@ -3,6 +3,8 @@ import { randomBytes, createHash } from "crypto";
 const PREIMAGE_SIZE = 32;
 const FULFILLMENT_LENGTH = 36;
 const CONDITION_LENGTH = 39;
+const FULFILLMENT_HEX_LENGTH = FULFILLMENT_LENGTH * 2;
+const CONDITION_HEX_LENGTH = CONDITION_LENGTH * 2;
 
 export interface ConditionFulfillment {
   condition: string;
@@ -57,11 +59,11 @@ export function fulfillmentFromPreimage(preimage: Buffer): string {
 }
 
 export function isValidConditionHex(hex: string): boolean {
-  return /^[0-9a-fA-F]{78}$/.test(hex);
+  return new RegExp(`^[0-9a-fA-F]{${CONDITION_HEX_LENGTH}}$`).test(hex);
 }
 
 export function isValidFulfillmentHex(hex: string): boolean {
-  return /^[0-9a-fA-F]{72}$/.test(hex);
+  return new RegExp(`^[0-9a-fA-F]{${FULFILLMENT_HEX_LENGTH}}$`).test(hex);
 }
 
 export function extractPreimage(fulfillmentHex: string): Buffer {
