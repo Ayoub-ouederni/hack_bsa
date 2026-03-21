@@ -203,3 +203,8 @@ export async function getSignerList(
     })),
   };
 }
+
+export async function getLedgerIndex(): Promise<number> {
+  const client = await getClient();
+  return client.getLedgerIndex();
+}
