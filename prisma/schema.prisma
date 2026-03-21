@@ -21,3 +21,18 @@ model Fund {
   inviteCode           String   @unique
   createdAt            DateTime @default(now())
 }
+
+model Member {
+  id               String    @id @default(cuid())
+  fundId           String
+  walletAddress    String
+  signerAddress    String
+  displayName      String
+  totalContributed Int       @default(0)
+  lastContribution DateTime?
+  status           String    @default("active")
+  nftTokenId       String?
+  joinedAt         DateTime  @default(now())
+
+  @@unique([fundId, walletAddress])
+}
