@@ -30,6 +30,18 @@ export function decodeMemos(
   }));
 }
 
+export function buildMemo(
+  type: string,
+  data: string
+): { Memo: { MemoType: string; MemoData: string } } {
+  return {
+    Memo: {
+      MemoType: toHex(type),
+      MemoData: toHex(data),
+    },
+  };
+}
+
 const LEDGER_OFFSET_STANDARD = 20;
 const LEDGER_OFFSET_MULTISIGN = 75;
 
