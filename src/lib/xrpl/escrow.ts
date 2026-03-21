@@ -190,6 +190,7 @@ export async function buildEscrowFinishTx(
   params: BuildEscrowFinishParams
 ): Promise<EscrowFinish> {
   validateAddress(params.ownerAddress, "owner");
+  validateEscrowSequence(params.escrowSequence);
 
   if (!isValidConditionHex(params.conditionHex)) {
     throw new Error("Invalid condition hex format");
