@@ -109,13 +109,16 @@ export async function getTxHistory(
 const BASE_RESERVE_DROPS = 10_000_000;
 const OWNER_RESERVE_DROPS = 2_000_000;
 
+export function calculateReserve(ownerCount: number): number {
+  return BASE_RESERVE_DROPS + ownerCount * OWNER_RESERVE_DROPS;
+}
+
 export async function getAvailableBalance(address: string): Promise<number> {
   const info = await getAccountInfo(address);
   if (!info) return 0;
 
   const balance = Number(info.account_data.Balance);
-  const ownerCount = info.account_data.OwnerCount;
-  const reserve = BASE_RESERVE_DROPS + ownerCount * OWNER_RESERVE_DROPS;
+  const reserve = calculateReserve(info.account_data.OwnerCount);
   return Math.max(0, balance - reserve);
 }
 
