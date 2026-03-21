@@ -164,16 +164,9 @@ export async function createEscrow(
   const signed = wallet.sign(prepared);
   const result = await client.submitAndWait(signed.tx_blob);
 
-  const meta = result.result.meta;
-  if (
-    typeof meta === "object" &&
-    meta !== null &&
-    "TransactionResult" in meta &&
-    meta.TransactionResult !== "tesSUCCESS"
-  ) {
-    throw new Error(
-      `EscrowCreate failed: ${meta.TransactionResult}`
-    );
+  const txResult = getTransactionResult(result.result.meta);
+  if (txResult !== null && txResult !== "tesSUCCESS") {
+    throw new Error(`EscrowCreate failed: ${txResult}`);
   }
 
   const sequence = (result.result.tx_json as Record<string, unknown>)
