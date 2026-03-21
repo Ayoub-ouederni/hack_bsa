@@ -7,8 +7,17 @@ datasource db {
   provider = "sqlite"
 }
 
-// Placeholder model — full schema will be added in Step 2
-model Placeholder {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+model Fund {
+  id                   String   @id @default(cuid())
+  name                 String
+  description          String?
+  organizerAddress     String
+  fundWalletAddress    String   @unique
+  fundWalletSeed       String
+  quorumRequired       Int
+  minContribution      Int
+  requestCapMultiplier Float    @default(2.0)
+  maxPoolPercent       Float    @default(0.2)
+  inviteCode           String   @unique
+  createdAt            DateTime @default(now())
 }
