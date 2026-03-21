@@ -13,6 +13,11 @@ export async function hashFile(file: File): Promise<string> {
   return hashArrayBuffer(buffer);
 }
 
+export async function hashBlob(blob: Blob): Promise<string> {
+  const buffer = await blob.arrayBuffer();
+  return hashArrayBuffer(buffer);
+}
+
 export async function hashArrayBuffer(buffer: ArrayBuffer): Promise<string> {
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
   return bufferToHex(hashBuffer);
