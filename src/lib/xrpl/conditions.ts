@@ -45,6 +45,15 @@ function encodeCondition(fingerprint: Buffer): Buffer {
   return buf;
 }
 
+export function conditionFromPreimage(preimage: Buffer): string {
+  const hash = createHash("sha256").update(preimage).digest();
+  return encodeCondition(hash).toString("hex").toUpperCase();
+}
+
+export function fulfillmentFromPreimage(preimage: Buffer): string {
+  return encodeFulfillment(preimage).toString("hex").toUpperCase();
+}
+
 export function extractPreimage(fulfillmentHex: string): Buffer {
   const buf = Buffer.from(fulfillmentHex, "hex");
   if (buf.length !== 36 || buf[0] !== 0xa0 || buf[2] !== 0x80) {
