@@ -126,4 +126,16 @@ export async function createEscrow(
   const prepared = await client.autofill(tx);
   const signed = wallet.sign(prepared);
   const result = await client.submitAndWait(signed.tx_blob);
+
+  const meta = result.result.meta;
+  if (
+    typeof meta === "object" &&
+    meta !== null &&
+    "TransactionResult" in meta &&
+    meta.TransactionResult !== "tesSUCCESS"
+  ) {
+    throw new Error(
+      `EscrowCreate failed: ${meta.TransactionResult}`
+    );
+  }
 }
