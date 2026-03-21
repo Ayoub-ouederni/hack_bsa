@@ -62,6 +62,9 @@ export {
   toHex,
   fromHex,
   decodeMemos,
+  isContributionMemo,
+  isReleaseMemo,
+  extractMemoId,
   MEMO_TYPES,
 } from "./payment";
 
