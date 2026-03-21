@@ -71,6 +71,7 @@ export interface ReleaseTxParams {
   recipientAddress: string;
   amountDrops: number;
   requestId: string;
+  signerCount?: number;
 }
 
 export async function buildReleaseTx(
@@ -83,11 +84,16 @@ export async function buildReleaseTx(
   const client = await getClient();
   const currentLedger = await client.getLedgerIndex();
 
+  const baseFee = 12;
+  const signerCount = params.signerCount ?? 1;
+  const fee = String(baseFee * (1 + signerCount));
+
   const tx: Payment = {
     TransactionType: "Payment",
     Account: params.fundWalletAddress,
     Destination: params.recipientAddress,
     Amount: String(params.amountDrops),
+    Fee: fee,
     Memos: [
       {
         Memo: {
