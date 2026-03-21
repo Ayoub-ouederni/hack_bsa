@@ -16,7 +16,7 @@ export async function hashText(text: string): Promise<string> {
 }
 
 export function isValidSha256Hex(hash: string): boolean {
-  return /^[0-9a-f]{64}$/.test(hash);
+  return /^[0-9a-fA-F]{64}$/.test(hash);
 }
 
 export async function verifyFileHash(
