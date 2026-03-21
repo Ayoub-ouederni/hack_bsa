@@ -29,6 +29,7 @@ export async function GET() {
         network,
         url,
         error: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString(),
       },
       { status: 503 }
     );
