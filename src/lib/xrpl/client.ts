@@ -36,7 +36,10 @@ async function connectWithTimeout(): Promise<Client> {
 }
 
 function setupAutoReconnect(c: Client): void {
-  c.on("disconnected", () => {
+  c.on("disconnected", (code: number) => {
+    if (code !== 1000) {
+      console.warn(`[XRPL] Disconnected unexpectedly (code ${code})`);
+    }
     client = null;
     connectPromise = null;
   });
