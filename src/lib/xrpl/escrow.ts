@@ -54,6 +54,10 @@ export function rippleTimeToUnix(rippleSeconds: number): number {
   return rippleSeconds + RIPPLE_EPOCH_OFFSET;
 }
 
+export function rippleTimeToDate(rippleSeconds: number): Date {
+  return new Date(rippleTimeToUnix(rippleSeconds) * 1000);
+}
+
 function getEscrowExpirySeconds(): number {
   const envValue = process.env.ESCROW_EXPIRY_SECONDS;
   if (envValue) {
