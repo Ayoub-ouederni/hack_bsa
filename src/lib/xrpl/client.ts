@@ -31,7 +31,15 @@ async function connectWithTimeout(): Promise<Client> {
     setupAutoReconnect(client);
   }
 
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error) {
+    client = null;
+    throw new Error(
+      `Failed to connect to XRPL at ${XRPL_URL}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+
   return client;
 }
 
