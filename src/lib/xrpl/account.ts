@@ -68,12 +68,20 @@ export async function getTxHistory(
   address: string,
   limit: number = 20
 ): Promise<TxHistoryEntry[]> {
-  const client = await getClient();
-  const response = await client.request({
-    command: "account_tx",
-    account: address,
-    limit,
-  });
+  let response;
+  try {
+    const client = await getClient();
+    response = await client.request({
+      command: "account_tx",
+      account: address,
+      limit,
+    });
+  } catch (error) {
+    if (isAccountNotFound(error)) {
+      return [];
+    }
+    throw error;
+  }
 
   return response.result.transactions.map((tx) => {
     const txData = tx.tx_json ?? {};
