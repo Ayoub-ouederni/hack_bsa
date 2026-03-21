@@ -86,6 +86,7 @@ export {
   cancelEscrow,
   canCreateEscrow,
   rippleTimeToUnix,
+  rippleTimeToDate,
 } from "./escrow";
 
 export type {
