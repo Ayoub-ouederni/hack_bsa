@@ -58,6 +58,7 @@ export type { ConditionFulfillment } from "./conditions";
 export {
   buildContributionTx,
   buildReleaseTx,
+  buildMemo,
   toHex,
   fromHex,
   decodeMemos,
