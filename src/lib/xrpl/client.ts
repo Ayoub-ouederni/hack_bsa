@@ -13,8 +13,21 @@ export async function getClient(): Promise<Client> {
     return client;
   }
 
+  if (connectPromise) {
+    return connectPromise;
+  }
+
+  connectPromise = connectWithTimeout();
+  try {
+    return await connectPromise;
+  } finally {
+    connectPromise = null;
+  }
+}
+
+async function connectWithTimeout(): Promise<Client> {
   if (!client) {
-    client = new Client(XRPL_URL);
+    client = new Client(XRPL_URL, { timeout: CONNECTION_TIMEOUT_MS });
   }
 
   await client.connect();
