@@ -76,6 +76,10 @@ export function getXrplUrl(): string {
   return XRPL_URL;
 }
 
+export function getNetworkId(): number | undefined {
+  return client?.networkID;
+}
+
 export async function disconnectClient(): Promise<void> {
   if (client) {
     await client.disconnect();
