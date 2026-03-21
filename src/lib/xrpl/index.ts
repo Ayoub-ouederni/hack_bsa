@@ -79,3 +79,10 @@ export type {
   ReleaseTxParams,
   MemoData,
 } from "./payment";
+
+export {
+  createEscrow,
+  buildEscrowFinishTx,
+  cancelEscrow,
+  canCreateEscrow,
+} from "./escrow";
