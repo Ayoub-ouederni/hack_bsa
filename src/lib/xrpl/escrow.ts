@@ -86,3 +86,21 @@ export async function canCreateEscrow(
     availableDrops: available,
   };
 }
+
+export async function createEscrow(
+  params: CreateEscrowParams
+): Promise<CreateEscrowResult> {
+  validateAddress(params.recipientAddress, "recipient");
+  validateAmount(params.amountDrops);
+
+  if (!isValidConditionHex(params.conditionHex)) {
+    throw new Error("Invalid condition hex format");
+  }
+
+  const wallet = Wallet.fromSeed(params.fundWalletSeed);
+  validateAddress(wallet.address, "fund wallet");
+
+  if (wallet.address === params.recipientAddress) {
+    throw new Error("Fund wallet and recipient addresses must be different");
+  }
+}
