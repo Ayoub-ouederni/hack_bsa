@@ -1,6 +1,8 @@
 import { randomBytes, createHash } from "crypto";
 
 const PREIMAGE_SIZE = 32;
+const FULFILLMENT_LENGTH = 36;
+const CONDITION_LENGTH = 39;
 
 export interface ConditionFulfillment {
   condition: string;
@@ -56,7 +58,7 @@ export function fulfillmentFromPreimage(preimage: Buffer): string {
 
 export function extractPreimage(fulfillmentHex: string): Buffer {
   const buf = Buffer.from(fulfillmentHex, "hex");
-  if (buf.length !== 36 || buf[0] !== 0xa0 || buf[2] !== 0x80) {
+  if (buf.length !== FULFILLMENT_LENGTH || buf[0] !== 0xa0 || buf[2] !== 0x80) {
     throw new Error("Invalid PREIMAGE-SHA-256 fulfillment");
   }
   return buf.subarray(4, 36);
@@ -67,7 +69,7 @@ export function verifyConditionFulfillment(
   fulfillmentHex: string
 ): boolean {
   const fulBuf = Buffer.from(fulfillmentHex, "hex");
-  if (fulBuf.length !== 36 || fulBuf[0] !== 0xa0 || fulBuf[2] !== 0x80) {
+  if (fulBuf.length !== FULFILLMENT_LENGTH || fulBuf[0] !== 0xa0 || fulBuf[2] !== 0x80) {
     return false;
   }
 
@@ -75,7 +77,7 @@ export function verifyConditionFulfillment(
   const hash = createHash("sha256").update(preimage).digest();
 
   const condBuf = Buffer.from(conditionHex, "hex");
-  if (condBuf.length !== 39 || condBuf[0] !== 0xa0 || condBuf[2] !== 0x80) {
+  if (condBuf.length !== CONDITION_LENGTH || condBuf[0] !== 0xa0 || condBuf[2] !== 0x80) {
     return false;
   }
 
