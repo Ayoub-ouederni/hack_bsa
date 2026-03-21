@@ -76,7 +76,7 @@ export function verifyConditionFulfillment(
   conditionHex: string,
   fulfillmentHex: string
 ): boolean {
-  const fulBuf = Buffer.from(fulfillmentHex, "hex");
+  const fulBuf = Buffer.from(fulfillmentHex.toUpperCase(), "hex");
   if (fulBuf.length !== FULFILLMENT_LENGTH || fulBuf[0] !== 0xa0 || fulBuf[2] !== 0x80) {
     return false;
   }
@@ -84,7 +84,7 @@ export function verifyConditionFulfillment(
   const preimage = fulBuf.subarray(4, 36);
   const hash = createHash("sha256").update(preimage).digest();
 
-  const condBuf = Buffer.from(conditionHex, "hex");
+  const condBuf = Buffer.from(conditionHex.toUpperCase(), "hex");
   if (condBuf.length !== CONDITION_LENGTH || condBuf[0] !== 0xa0 || condBuf[2] !== 0x80) {
     return false;
   }
