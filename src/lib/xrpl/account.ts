@@ -204,6 +204,11 @@ export async function getSignerList(
   };
 }
 
+export async function accountExists(address: string): Promise<boolean> {
+  const info = await getAccountInfo(address);
+  return info !== null;
+}
+
 export async function getAccountSequence(address: string): Promise<number> {
   const info = await getAccountInfo(address);
   if (!info) {
