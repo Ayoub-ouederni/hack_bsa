@@ -3,6 +3,7 @@ import { getClient, getXrplUrl } from "@/lib/xrpl/client";
 
 export async function GET() {
   const url = getXrplUrl();
+  const network = process.env.NEXT_PUBLIC_XRPL_NETWORK ?? "testnet";
 
   try {
     const client = await getClient();
@@ -11,6 +12,7 @@ export async function GET() {
 
     return NextResponse.json({
       status: "connected",
+      network,
       url,
       serverVersion: info.build_version,
       completeLedgers: info.complete_ledgers,
