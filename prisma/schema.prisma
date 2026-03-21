@@ -36,3 +36,11 @@ model Member {
 
   @@unique([fundId, walletAddress])
 }
+
+model Contribution {
+  id        String   @id @default(cuid())
+  memberId  String
+  amount    Int
+  txHash    String   @unique
+  createdAt DateTime @default(now())
+}
