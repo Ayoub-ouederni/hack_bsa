@@ -52,6 +52,10 @@ function setupAutoReconnect(c: Client): void {
     connectPromise = null;
   });
 
+  c.on("connected", () => {
+    console.log(`[XRPL] Connected to ${XRPL_URL}`);
+  });
+
   c.on("error", (error) => {
     console.error("[XRPL] Client error:", error);
   });
