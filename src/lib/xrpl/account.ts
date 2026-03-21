@@ -84,19 +84,17 @@ export async function getTxHistory(
   }
 
   return response.result.transactions.map((tx) => {
-    const txData = tx.tx_json ?? {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const txData = (tx.tx_json ?? {}) as Record<string, any>;
     return {
-      hash: ("hash" in tx ? tx.hash : txData.hash) ?? "",
-      type: ("TransactionType" in txData ? txData.TransactionType : "") ?? "",
-      account: ("Account" in txData ? txData.Account : "") ?? "",
-      destination:
-        "Destination" in txData ? (txData.Destination as string) : undefined,
+      hash: (tx.hash ?? txData.hash ?? "") as string,
+      type: (txData.TransactionType ?? "") as string,
+      account: (txData.Account ?? "") as string,
+      destination: txData.Destination as string | undefined,
       amount:
-        "Amount" in txData && typeof txData.Amount === "string"
-          ? txData.Amount
-          : undefined,
-      fee: ("Fee" in txData ? txData.Fee : "0") ?? "0",
-      date: "date" in txData ? (txData.date as number) : undefined,
+        typeof txData.Amount === "string" ? txData.Amount : undefined,
+      fee: (txData.Fee ?? "0") as string,
+      date: txData.date as number | undefined,
       validated: tx.validated,
     };
   });
