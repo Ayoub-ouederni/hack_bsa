@@ -87,6 +87,7 @@ export {
   canCreateEscrow,
   rippleTimeToUnix,
   rippleTimeToDate,
+  isEscrowExpired,
 } from "./escrow";
 
 export type {
