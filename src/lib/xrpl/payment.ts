@@ -32,14 +32,17 @@ export function decodeMemos(
 
 export function buildMemo(
   type: string,
-  data: string
-): { Memo: { MemoType: string; MemoData: string } } {
-  return {
-    Memo: {
-      MemoType: toHex(type),
-      MemoData: toHex(data),
-    },
+  data: string,
+  format?: string
+): { Memo: { MemoType: string; MemoData: string; MemoFormat?: string } } {
+  const memo: { MemoType: string; MemoData: string; MemoFormat?: string } = {
+    MemoType: toHex(type),
+    MemoData: toHex(data),
   };
+  if (format) {
+    memo.MemoFormat = toHex(format);
+  }
+  return { Memo: memo };
 }
 
 export function isContributionMemo(memos: MemoData[]): boolean {
