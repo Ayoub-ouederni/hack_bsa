@@ -74,6 +74,10 @@ model Request {
   createdAt           DateTime  @default(now())
 
   votes Vote[]
+
+  @@index([fundId])
+  @@index([fundId, status])
+  @@index([requesterAddress])
 }
 
 model Vote {
