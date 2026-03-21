@@ -23,10 +23,24 @@ export interface TxHistoryEntry {
   validated: boolean;
 }
 
+function isAccountNotFound(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message.includes("Account not found")
+  );
+}
+
 export async function getBalance(address: string): Promise<number> {
-  const client = await getClient();
-  const xrpBalance = await client.getXrpBalance(address);
-  return xrpToDrops(xrpBalance);
+  try {
+    const client = await getClient();
+    const xrpBalance = await client.getXrpBalance(address);
+    return xrpToDrops(xrpBalance);
+  } catch (error) {
+    if (isAccountNotFound(error)) {
+      return 0;
+    }
+    throw error;
+  }
 }
 
 export async function getAccountInfo(
