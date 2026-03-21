@@ -164,4 +164,6 @@ export async function buildEscrowFinishTx(
   const client = await getClient();
   const currentLedger = await client.getLedgerIndex();
   const sequence = await getAccountSequence(params.ownerAddress);
+  const signerCount = params.signerCount ?? 1;
+  const fee = String(calculateMultiSignFee(signerCount));
 }
