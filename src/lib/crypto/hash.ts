@@ -15,6 +15,14 @@ export async function hashText(text: string): Promise<string> {
   return bufferToHex(hashBuffer);
 }
 
+export function normalizeSha256Hex(hash: string): string {
+  const normalized = hash.toLowerCase().trim();
+  if (!isValidSha256Hex(normalized)) {
+    throw new Error(`Invalid SHA-256 hash: ${hash}`);
+  }
+  return normalized;
+}
+
 export function isValidSha256Hex(hash: string): boolean {
   return /^[0-9a-fA-F]{64}$/.test(hash);
 }
