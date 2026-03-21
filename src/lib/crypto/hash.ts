@@ -67,6 +67,9 @@ export function constantTimeEqual(a: string, b: string): boolean {
 }
 
 export function hexToUint8Array(hex: string): Uint8Array {
+  if (hex.length % 2 !== 0) {
+    throw new Error("Hex string must have even length");
+  }
   const bytes = new Uint8Array(hex.length / 2);
   for (let i = 0; i < hex.length; i += 2) {
     bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
