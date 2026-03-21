@@ -12,6 +12,14 @@ export async function createTestnetWallet(): Promise<FaucetResult> {
   return { wallet, balance };
 }
 
+export function walletFromSeed(seed: string): Wallet {
+  return Wallet.fromSeed(seed);
+}
+
+export function generateWallet(): Wallet {
+  return Wallet.generate();
+}
+
 export async function fundExistingWallet(
   wallet: Wallet,
   amount?: string
