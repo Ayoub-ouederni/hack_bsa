@@ -9,6 +9,11 @@ export function fromHex(hex: string): string {
   return Buffer.from(hex, "hex").toString("utf-8");
 }
 
+export const MEMO_TYPES = {
+  CONTRIBUTION: "pulse/contribution",
+  RELEASE: "pulse/release",
+} as const;
+
 export interface ContributionTxParams {
   fromAddress: string;
   fundWalletAddress: string;
@@ -30,7 +35,7 @@ export async function buildContributionTx(
     Memos: [
       {
         Memo: {
-          MemoType: toHex("pulse/contribution"),
+          MemoType: toHex(MEMO_TYPES.CONTRIBUTION),
           MemoData: toHex(params.fundId),
         },
       },
@@ -62,7 +67,7 @@ export async function buildReleaseTx(
     Memos: [
       {
         Memo: {
-          MemoType: toHex("pulse/release"),
+          MemoType: toHex(MEMO_TYPES.RELEASE),
           MemoData: toHex(params.requestId),
         },
       },
