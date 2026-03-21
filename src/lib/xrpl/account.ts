@@ -263,3 +263,9 @@ export async function getLedgerIndex(): Promise<number> {
   const client = await getClient();
   return client.getLedgerIndex();
 }
+
+export async function getServerFee(): Promise<string> {
+  const client = await getClient();
+  const response = await client.request({ command: "fee" });
+  return response.result.drops.open_ledger_fee;
+}
