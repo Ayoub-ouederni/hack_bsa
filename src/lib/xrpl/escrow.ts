@@ -49,3 +49,14 @@ export interface CancelEscrowResult {
 function unixToRippleTime(unixSeconds: number): number {
   return unixSeconds - RIPPLE_EPOCH_OFFSET;
 }
+
+function getEscrowExpirySeconds(): number {
+  const envValue = process.env.ESCROW_EXPIRY_SECONDS;
+  if (envValue) {
+    const parsed = parseInt(envValue, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+  return DEFAULT_ESCROW_EXPIRY_SECONDS;
+}
