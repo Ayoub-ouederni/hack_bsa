@@ -20,6 +20,7 @@ export async function GET() {
       completeLedgers: info.complete_ledgers,
       networkId: info.network_id,
       validatedLedger: info.validated_ledger?.seq,
+      serverState: info.server_state,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
