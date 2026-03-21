@@ -226,6 +226,7 @@ export async function cancelEscrow(
   params: CancelEscrowParams
 ): Promise<CancelEscrowResult> {
   validateAddress(params.ownerAddress, "owner");
+  validateEscrowSequence(params.escrowSequence);
 
   const wallet = Wallet.fromSeed(params.fundWalletSeed);
 
