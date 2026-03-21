@@ -6,3 +6,5 @@ import { isValidConditionHex, isValidFulfillmentHex } from "./conditions";
 import { calculateMultiSignFee, BASE_FEE_DROPS } from "./payment";
 
 const RIPPLE_EPOCH_OFFSET = 946684800;
+
+const LEDGER_OFFSET_ESCROW = 20;
