@@ -63,6 +63,8 @@ export {
   buildReleaseTx,
   buildMemo,
   canAffordContribution,
+  calculateMultiSignFee,
+  BASE_FEE_DROPS,
   toHex,
   fromHex,
   decodeMemos,
