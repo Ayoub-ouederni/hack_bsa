@@ -41,3 +41,7 @@ export interface CancelEscrowParams {
   ownerAddress: string;
   escrowSequence: number;
 }
+
+export interface CancelEscrowResult {
+  txHash: string;
+}
