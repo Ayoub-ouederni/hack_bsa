@@ -1,8 +1,12 @@
 import type { Payment } from "xrpl";
 import { getClient } from "./client";
 
-function toHex(text: string): string {
+export function toHex(text: string): string {
   return Buffer.from(text, "utf-8").toString("hex").toUpperCase();
+}
+
+export function fromHex(hex: string): string {
+  return Buffer.from(hex, "hex").toString("utf-8");
 }
 
 export interface ContributionTxParams {
