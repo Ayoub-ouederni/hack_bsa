@@ -45,6 +45,14 @@ function encodeCondition(fingerprint: Buffer): Buffer {
   return buf;
 }
 
+export function extractPreimage(fulfillmentHex: string): Buffer {
+  const buf = Buffer.from(fulfillmentHex, "hex");
+  if (buf.length !== 36 || buf[0] !== 0xa0 || buf[2] !== 0x80) {
+    throw new Error("Invalid PREIMAGE-SHA-256 fulfillment");
+  }
+  return buf.subarray(4, 36);
+}
+
 export function verifyConditionFulfillment(
   conditionHex: string,
   fulfillmentHex: string
