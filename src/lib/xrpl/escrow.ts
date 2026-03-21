@@ -103,4 +103,10 @@ export async function createEscrow(
   if (wallet.address === params.recipientAddress) {
     throw new Error("Fund wallet and recipient addresses must be different");
   }
+
+  const expirySeconds =
+    params.cancelAfterSeconds ?? getEscrowExpirySeconds();
+  const cancelAfterRipple = unixToRippleTime(
+    Math.floor(Date.now() / 1000) + expirySeconds
+  );
 }
