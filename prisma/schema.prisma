@@ -54,6 +54,8 @@ model Contribution {
   amount    Int
   txHash    String   @unique
   createdAt DateTime @default(now())
+
+  @@index([memberId])
 }
 
 model Request {
