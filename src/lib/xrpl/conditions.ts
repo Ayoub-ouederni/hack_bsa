@@ -56,6 +56,14 @@ export function fulfillmentFromPreimage(preimage: Buffer): string {
   return encodeFulfillment(preimage).toString("hex").toUpperCase();
 }
 
+export function isValidConditionHex(hex: string): boolean {
+  return /^[0-9a-fA-F]{78}$/.test(hex);
+}
+
+export function isValidFulfillmentHex(hex: string): boolean {
+  return /^[0-9a-fA-F]{72}$/.test(hex);
+}
+
 export function extractPreimage(fulfillmentHex: string): Buffer {
   const buf = Buffer.from(fulfillmentHex, "hex");
   if (buf.length !== FULFILLMENT_LENGTH || buf[0] !== 0xa0 || buf[2] !== 0x80) {
