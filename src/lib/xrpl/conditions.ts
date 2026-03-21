@@ -11,7 +11,11 @@ export interface ConditionFulfillment {
   fulfillment: string;
 }
 
-export function generateConditionAndFulfillment(): ConditionFulfillment {
+export interface ConditionFulfillmentWithPreimage extends ConditionFulfillment {
+  preimageHex: string;
+}
+
+export function generateConditionAndFulfillment(): ConditionFulfillmentWithPreimage {
   const preimage = randomBytes(PREIMAGE_SIZE);
   const hash = createHash("sha256").update(preimage).digest();
 
@@ -21,6 +25,7 @@ export function generateConditionAndFulfillment(): ConditionFulfillment {
   return {
     condition: condition.toString("hex").toUpperCase(),
     fulfillment: fulfillment.toString("hex").toUpperCase(),
+    preimageHex: preimage.toString("hex").toUpperCase(),
   };
 }
 
