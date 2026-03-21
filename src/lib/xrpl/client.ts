@@ -28,10 +28,18 @@ export async function getClient(): Promise<Client> {
 async function connectWithTimeout(): Promise<Client> {
   if (!client) {
     client = new Client(XRPL_URL, { timeout: CONNECTION_TIMEOUT_MS });
+    setupAutoReconnect(client);
   }
 
   await client.connect();
   return client;
+}
+
+function setupAutoReconnect(c: Client): void {
+  c.on("disconnected", () => {
+    client = null;
+    connectPromise = null;
+  });
 }
 
 export async function disconnectClient(): Promise<void> {
