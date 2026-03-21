@@ -97,6 +97,7 @@ export async function buildReleaseTx(
     Amount: String(params.amountDrops),
     Fee: fee,
     Sequence: sequence,
+    SigningPubKey: "",
     Memos: [
       {
         Memo: {
