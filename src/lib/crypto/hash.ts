@@ -4,6 +4,11 @@ export async function hashFile(file: File): Promise<string> {
   return bufferToHex(hashBuffer);
 }
 
+export async function hashArrayBuffer(buffer: ArrayBuffer): Promise<string> {
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  return bufferToHex(hashBuffer);
+}
+
 export async function hashText(text: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(text);
