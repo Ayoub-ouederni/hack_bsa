@@ -53,7 +53,10 @@ export {
   isValidFulfillmentHex,
 } from "./conditions";
 
-export type { ConditionFulfillment } from "./conditions";
+export type {
+  ConditionFulfillment,
+  ConditionFulfillmentWithPreimage,
+} from "./conditions";
 
 export {
   buildContributionTx,
