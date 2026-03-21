@@ -116,6 +116,12 @@ export async function createEscrow(
 
   const expirySeconds =
     params.cancelAfterSeconds ?? getEscrowExpirySeconds();
+
+  if (expirySeconds < MIN_ESCROW_EXPIRY_SECONDS) {
+    throw new Error(
+      `Escrow expiry must be at least ${MIN_ESCROW_EXPIRY_SECONDS} seconds, got: ${expirySeconds}`
+    );
+  }
   const cancelAfterRipple = unixToRippleTime(
     Math.floor(Date.now() / 1000) + expirySeconds
   );
