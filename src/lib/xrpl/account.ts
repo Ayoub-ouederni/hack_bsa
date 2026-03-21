@@ -204,6 +204,14 @@ export async function getSignerList(
   };
 }
 
+export async function getAccountSequence(address: string): Promise<number> {
+  const info = await getAccountInfo(address);
+  if (!info) {
+    throw new Error(`Account ${address} not found`);
+  }
+  return info.account_data.Sequence;
+}
+
 export async function getLedgerIndex(): Promise<number> {
   const client = await getClient();
   return client.getLedgerIndex();
