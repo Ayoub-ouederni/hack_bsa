@@ -43,6 +43,10 @@ function setupAutoReconnect(c: Client): void {
     client = null;
     connectPromise = null;
   });
+
+  c.on("error", (error) => {
+    console.error("[XRPL] Client error:", error);
+  });
 }
 
 export async function disconnectClient(): Promise<void> {
