@@ -1,18 +1,19 @@
 # Pulse — Complete Implementation Plan
 
 ## Context
-Pulse is a decentralized community emergency fund for the XRPL Commons Hackathon (Best Social Impact track). Members pool XRP, submit emergency requests with SHA-256 proof documents, and community votes via XRPL multi-signature release the funds. Soulbound NFTs (XLS-20) serve as membership cards. The repo is currently empty. We build everything from scratch.
+Pulse is a decentralized community emergency fund for the XRPL Commons Hackathon (Best Social Impact track). Members pool XRP, submit emergency requests with SHA-256 proof documents, and community votes via XRPL multi-signature release the funds. Soulbound NFTs (XLS-20) serve as membership cards. The repo has an initial Next.js 16 scaffold with shadcn/ui components already installed.
 
 **I (Claude) handle:** All code including the full blockchain/XRPL layer.
-**You (user) handle:** Install GemWallet browser extension, switch to Testnet, create `.env.local`.
+**You (user) handle:** Install GemWallet (confirmed working for connection + payments), switch to Testnet, create `.env.local`.
 **Someone else handles:** The 3 animation components (HeartbeatPulse, SolidarityWall, RequestProgressTracker) — I provide placeholder components with correct TypeScript interfaces.
 
 ---
 
 ## Tech Stack
-- **Frontend:** Next.js 14 (App Router) + TypeScript + Tailwind CSS + Framer Motion
+- **Frontend:** Next.js 16 (App Router) + TypeScript + Tailwind CSS + Framer Motion
 - **Blockchain:** XRPL Testnet via `xrpl.js` (v4)
-- **Wallet:** GemWallet (browser extension) via `@gemwallet/api`
+- **Wallet (connection + payments):** `xrpl-connect` (by XRPL Commons) — unified API for GemWallet, Xaman, Crossmark, Ledger, WalletConnect. GemWallet confirmed working (tested 2026-03-21).
+- **Wallet (multi-sign voting):** `xrpl.js` client-side signer keypairs — generated on join, stored in localStorage, real on-chain multi-signing via `wallet.sign(tx, true)`
 - **Database:** SQLite via Prisma (zero-config, hackathon-friendly)
 - **Icons:** Lucide React
 
@@ -31,14 +32,14 @@ hack_bsa/
 │   │   ├── page.tsx                       # Landing: connect wallet → see your funds
 │   │   ├── globals.css                    # Tailwind imports + custom CSS vars
 │   │   ├── onboarding/
-│   │   │   └── page.tsx                   # Enter invite code → enter name → connect GemWallet
+│   │   │   └── page.tsx                   # Enter invite code → enter name → connect wallet
 │   │   ├── fund/
 │   │   │   ├── create/
 │   │   │   │   └── page.tsx               # Form: name, quorum, min contribution, caps
 │   │   │   └── [fundId]/
 │   │   │       ├── page.tsx               # Dashboard: heartbeat, pool stats, active requests, members
 │   │   │       ├── contribute/
-│   │   │       │   └── page.tsx           # Amount input (pre-filled min) → GemWallet sign
+│   │   │       │   └── page.tsx           # Amount input (pre-filled min) → wallet sign
 │   │   │       ├── request/
 │   │   │       │   └── page.tsx           # 3-step form: amount → description → doc upload + SHA-256
 │   │   │       └── vote/
@@ -76,8 +77,9 @@ hack_bsa/
 │   │   │   ├── payment.ts                # Build Payment TX (contribution + release)
 │   │   │   ├── account.ts                # getBalance, getTxHistory, getSignerList, getAccountInfo
 │   │   │   └── faucet.ts                 # Testnet faucet: create + fund new wallets
-│   │   ├── gemwallet/
-│   │   │   └── client.ts                 # isInstalled, getAddress, signTransaction, submitTransaction
+│   │   ├── wallet/
+│   │   │   ├── client.ts                 # xrpl-connect wrapper: connect, getAddress, signTransaction
+│   │   │   └── signer.ts                 # Client-side signer keypairs for multi-sign voting (xrpl.js)
 │   │   ├── crypto/
 │   │   │   └── hash.ts                   # Client-side SHA-256 via Web Crypto API
 │   │   ├── db/
@@ -94,13 +96,7 @@ hack_bsa/
 │   │   │   ├── HeartbeatPulse.tsx        # PLACEHOLDER — correct props interface, simple visual
 │   │   │   ├── SolidarityWall.tsx        # PLACEHOLDER — correct props interface, simple visual
 │   │   │   └── RequestProgressTracker.tsx # PLACEHOLDER — correct props interface, simple visual
-│   │   ├── ui/
-│   │   │   ├── Button.tsx                # Variants: primary, secondary, danger, ghost
-│   │   │   ├── Card.tsx                  # Dark card with border
-│   │   │   ├── Input.tsx                 # Styled input with label
-│   │   │   ├── Modal.tsx                 # Overlay modal
-│   │   │   ├── Badge.tsx                 # Status badges (active, inactive, etc.)
-│   │   │   └── Spinner.tsx              # Loading spinner
+│   │   ├── ui/                           # shadcn/ui components (already installed: card, button, input, badge, dialog, etc.)
 │   │   ├── layout/
 │   │   │   ├── Header.tsx               # Logo, wallet connection status, nav links
 │   │   │   └── PageShell.tsx            # Max-width container, padding, title
@@ -116,13 +112,13 @@ hack_bsa/
 │   │   ├── vote/
 │   │   │   └── VoteButtons.tsx          # "I support" (green) + "I pass" (gray)
 │   │   └── wallet/
-│   │       └── ConnectWallet.tsx         # "Connect GemWallet" button + status
+│   │       └── ConnectWallet.tsx         # "Connect Wallet" button + wallet picker + status
 │   ├── contexts/
 │   │   └── WalletContext.tsx             # address, isConnected, connect(), disconnect()
 │   └── types/
 │       ├── fund.ts                       # Fund, Member, Contribution TypeScript types
 │       └── request.ts                    # Request, Vote, RequestStatus types
-├── next.config.js
+├── next.config.ts
 ├── tailwind.config.ts
 ├── tsconfig.json
 └── package.json
@@ -153,7 +149,8 @@ hack_bsa/
 |--------|------|-------|
 | id | String (cuid) | PK |
 | fundId | String | FK → Fund |
-| walletAddress | String | XRPL address |
+| walletAddress | String | XRPL address (main wallet — identity + payments via GemWallet) |
+| signerAddress | String | XRPL address of client-side signer keypair (for multi-sign voting) |
 | displayName | String | Human name |
 | totalContributed | Int | In drops, updated on each contribution |
 | lastContribution | DateTime? | For inactivity tracking |
@@ -192,11 +189,12 @@ hack_bsa/
 |--------|------|-------|
 | id | String (cuid) | PK |
 | requestId | String | FK → Request |
-| voterAddress | String | XRPL address |
-| vote | String | "support" or "pass" |
-| signature | String? | Multi-sig TX blob (only for "support") |
+| voterAddress | String | XRPL address (only "support" votes are recorded) |
+| signature | String | Multi-sig TX blob |
 | createdAt | DateTime | |
 | **Unique constraint:** (requestId, voterAddress) |
+
+> **Anonymous "no" votes (per idea doc 3.5):** Only "support" votes are recorded in the DB. Members who disagree simply don't vote — there is no record of a "no/pass" vote, preserving anonymity. The absence of a signature = implicit "pass".
 
 ---
 
@@ -225,11 +223,13 @@ getAccountBalance(address: string): Promise<number>          // Returns drops
 getAccountInfo(address: string): Promise<AccountInfoResponse>
 getAccountTransactions(address: string, limit?: number): Promise<Transaction[]>
 getSignerList(address: string): Promise<SignerEntry[]>        // Current signers on account
+getAvailableBalance(address: string): Promise<number>         // Balance minus reserves (base + signers + escrows)
+// Available = total - 10_000_000 (base) - (ownerCount × 2_000_000) - 1_000_000 (fee buffer)
 ```
 
 ### `src/lib/xrpl/payment.ts` — XRP Transfers
 ```typescript
-// Build unsigned Payment TX (for GemWallet to sign)
+// Build unsigned Payment TX (for wallet to sign via xrpl-connect)
 buildContributionTx(params: {
   fromAddress: string,
   fundWalletAddress: string,
@@ -255,7 +255,7 @@ generateConditionAndFulfillment(): { condition: string, fulfillment: string }
 - Generates random 32-byte preimage
 - Produces PREIMAGE-SHA-256 condition (RFC draft-thomas-crypto-conditions)
 - Returns both as uppercase hex strings
-- Uses `five-bells-condition` npm package for correct encoding
+- Implement manually with Node.js `crypto` module (generate random 32-byte preimage, SHA-256 hash it, encode per RFC). `five-bells-condition` is outdated (2019) and may have compatibility issues with Node 20+.
 - The condition goes into EscrowCreate; the fulfillment is stored server-side and used in EscrowFinish
 
 ### `src/lib/xrpl/escrow.ts` — Escrow Management
@@ -332,7 +332,7 @@ mintMembershipNFT(params: {
 - URI encodes: `pulse://membership/{fundId}/{memberAddress}`
 - `NFTokenTaxon`: constant (e.g. 1) to group all Pulse NFTs
 - After minting: creates `NFTokenCreateOffer` with amount=0 and `Destination=recipient`
-- **Simplified for hackathon:** Auto-accept offer server-side if possible, or skip acceptance step to reduce onboarding friction
+- **XRPL constraint:** `NFTokenMint` always mints to the issuer (fund wallet). To give it to the recipient: 1) Mint on fund wallet, 2) `NFTokenCreateOffer` (amount=0, Destination=recipient), 3) Recipient calls `NFTokenAcceptOffer` (requires their signature via xrpl-connect). If this adds too much friction for demo, membership can be tracked in DB only and NFT minting made optional.
 
 ```typescript
 // Verify a wallet holds a membership NFT from this fund
@@ -353,30 +353,55 @@ burnMembershipNFT(params: {
 
 ---
 
-## GemWallet Integration — `src/lib/gemwallet/client.ts`
+## Wallet Integration — Dual-Mode with GemWallet Preference
 
+**Library:** `xrpl-connect` by XRPL Commons — supports GemWallet, Xaman, Crossmark, Ledger, WalletConnect with a single API.
+**Confirmed:** GemWallet accepts signing transactions where Account ≠ user's wallet (tested 2026-03-21).
+
+**⚠️ Multi-sign format caveat:** GemWallet's `signTransaction` may produce a **regular signature** (with `SigningPubKey` + `TxnSignature`) instead of a **multi-sign signature** (empty `SigningPubKey` + `Signers[]` array). XRPL multi-sign requires the latter format. The wallet integration must handle both cases:
+- **If GemWallet produces multi-sign blobs:** Use them directly with `xrpl.multisign()` ✅
+- **If GemWallet produces regular blobs:** Fall back to **client-side signer keypairs** (xrpl.js `wallet.sign(tx, true)`) for voting, keep GemWallet for connection + payments only
+
+**File:** `src/lib/wallet/client.ts`
 ```typescript
-// Check if GemWallet browser extension is installed
-checkGemWallet(): Promise<boolean>
+// xrpl-connect uses WalletManager class + <xrpl-wallet-connector> web component
+// Adapters: XamanAdapter, CrossmarkAdapter, GemWalletAdapter, WalletConnectAdapter, LedgerAdapter
 
-// Get user's XRPL address from GemWallet
-getWalletAddress(): Promise<string>
+// Connect: open the wallet picker UI
+connectWallet(): Promise<{ address: string, walletType: string }>
+// Wraps: walletManager + connector.open()
 
-// Sign a transaction (returns signed blob, does NOT submit)
-signTransaction(tx: Transaction): Promise<{ signature: string }>
-
-// Sign for multi-signature (returns blob with only this signer's signature)
-multiSignTransaction(tx: Transaction): Promise<{ signature: string }>
+// Sign a transaction (regular — for contributions)
+signTransaction(tx: Transaction): Promise<SignedTransaction>
+// Wraps: walletManager.sign(transaction)
 
 // Sign and submit a transaction in one step
-submitTransaction(tx: Transaction): Promise<{ txHash: string }>
+submitTransaction(tx: Transaction): Promise<SubmittedTransaction>
+// Wraps: walletManager.signAndSubmit(transaction)
 ```
 
-All functions use `@gemwallet/api` under the hood:
-- `isInstalled()` → `checkGemWallet()`
-- `getAddress()` → `getWalletAddress()`
-- `signTransaction({ transaction })` → `signTransaction()`
-- `submitTransaction({ transaction })` → `submitTransaction()`
+**File:** `src/lib/wallet/signer.ts` (fallback for multi-sign voting)
+```typescript
+// Generate a dedicated signer keypair for voting (called when joining a fund)
+generateSignerKeypair(): { address: string, seed: string }
+// Uses xrpl.Wallet.generate() — keypair stored in localStorage
+
+// Get stored signer for a fund
+getSignerForFund(fundId: string): xrpl.Wallet | null
+// Reads seed from localStorage, returns xrpl.Wallet instance
+
+// Sign a TX in multi-sign mode (produces correct multi-sign blob)
+multiSignTransaction(tx: Transaction, fundId: string): { tx_blob: string, signer: string }
+// Calls wallet.sign(tx, true) — guaranteed multi-sign format
+```
+
+**Multi-sign flow:**
+1. Member joins fund → `generateSignerKeypair()` → seed saved to localStorage → **signer address** added to on-chain SignerList
+2. Member votes "I support" → client-side `wallet.sign(tx, true)` with signer key from localStorage → produces multi-sign blob (no wallet popup, instant)
+3. Signed blob sent to server → server collects blobs → `xrpl.multisign()` → submit when quorum reached
+4. **Real on-chain multi-signing** — blockchain enforces quorum, not our server
+
+**Note:** The signer key is separate from the member's main wallet. Main wallet (via GemWallet/xrpl-connect) = identity + payments. Signer key (xrpl.js localStorage) = voting only. This guarantees multi-sign blobs are in the correct format.
 
 ---
 
@@ -424,18 +449,22 @@ async hashFile(file: File): Promise<string>
 {
   "inviteCode": "ABC12345",
   "walletAddress": "rYYYY...",
+  "signerAddress": "rZZZZ...",
   "displayName": "Bob"
 }
 ```
+Note: `signerAddress` is generated client-side by `xrpl.Wallet.generate()` and stored in localStorage. The seed never leaves the browser.
+
 **Logic:**
 1. Validate invite code matches fund
 2. Check member not already in fund
 3. Check signer count < 32 (XRPL limit)
-4. Get current signer list from XRPL
-5. Call `addSigner()` → add to signer list
-6. Call `mintMembershipNFT()` → mint soulbound NFT
-7. Save Member to DB
-8. Return member details + NFT offer ID (member must accept in GemWallet)
+4. **Check fund wallet has sufficient reserve** for new signer (base reserve + owner reserve per signer). Reject with clear error if not enough XRP.
+5. Get current signer list from XRPL
+6. Call `addSigner()` → add **signerAddress** to signer list (this is the address that will multi-sign votes)
+7. Call `mintMembershipNFT()` → mint soulbound NFT + create offer (amount=0, Destination=member)
+8. Save Member to DB (both walletAddress and signerAddress)
+9. Return member details
 
 ### `GET /api/fund/[fundId]` — Get fund dashboard data
 **Logic:**
@@ -500,62 +529,61 @@ async hashFile(file: File): Promise<string>
 7. Set status = "voting", expiresAt = now + 10min
 8. Return request details (without fulfillment)
 
-### `POST /api/fund/[fundId]/request/[requestId]/vote` — Cast a vote
+### `POST /api/fund/[fundId]/request/[requestId]/vote` — Cast a support vote
 **Input:**
 ```json
 {
   "voterAddress": "rYYYY...",
-  "vote": "support",
+  "signerAddress": "rZZZZ...",
   "signedTxBlob": "1200..."
 }
 ```
+Note: Only "support" votes hit this endpoint. "No" votes don't exist — members who disagree simply don't vote (anonymous, per idea doc 3.5). `signedTxBlob` is produced client-side by `xrpl.Wallet.sign(tx, true)` using the signer key from localStorage.
+
 **Logic:**
 1. Validate voter is an active member, not the requester
-2. Check voter hasn't already voted on this request
-3. Check request is still in "voting" status and not expired
-4. Save Vote to DB
-5. If vote = "support":
-   a. Validate `signedTxBlob` is a valid multi-sign of the expected EscrowFinish TX
-   b. Store the signature blob
-   c. Count total "support" votes
-   d. If support count >= quorumRequired:
-      - Collect all signature blobs
-      - Call `combineSignatures()` → combined multi-signed TX
-      - Call `submitMultiSigned()` → submit to XRPL
-      - Update request status to "released"
-      - Return `{ status: "released", txHash: "..." }`
-6. If vote = "pass": just save, no on-chain action
-7. Return current vote tally
+2. Validate signerAddress belongs to voterAddress (check Member table)
+3. Check voter hasn't already voted on this request
+4. Check request is still in "voting" status and not expired
+5. Save Vote to DB (store the multi-signed TX blob)
+6. Count total support votes
+7. If support count >= quorumRequired:
+   - Collect all signature blobs
+   - Call `combineSignatures()` → combined multi-signed TX
+   - Call `submitMultiSigned()` → submit to XRPL
+   - Update request status to "released"
+   - Return `{ status: "released", txHash: "..." }`
+8. Return current vote tally
 
 ### `GET /api/fund/[fundId]/request/[requestId]` — Get request for voting
 **Output:**
 ```json
 {
   "request": { "id", "amount", "description", "documentHash", "status", "expiresAt" },
-  "votes": { "support": 2, "pass": 1, "total": 3 },
-  "voterNames": ["Alice", "Carol"],
+  "votes": { "support": 2, "total": 4 },
+  "supporterNames": ["Alice", "Carol"],
   "quorumRequired": 3,
   "unsignedEscrowFinishTx": { ... },
   "timeRemaining": "8m 30s"
 }
 ```
-- The `unsignedEscrowFinishTx` is the TX that voters sign via GemWallet multi-sign
-- This TX is the same for all voters (they each add their own signature)
+- The `unsignedEscrowFinishTx` is the TX that voters sign client-side via `xrpl.Wallet.sign(tx, true)` using their signer key from localStorage
+- This TX is the same for all voters (they each add their own multi-sign signature)
 
 ---
 
 ## Frontend Pages — Detailed
 
 ### Landing Page (`src/app/page.tsx`)
-- If wallet not connected: Pulse logo, tagline, "Connect GemWallet" button
+- If wallet not connected: Pulse logo, tagline, "Connect Wallet" button
 - If connected but no funds: "Create a Fund" + "Join a Fund (enter invite code)" buttons
 - If connected with funds: list of FundCards → click to go to dashboard
 
 ### Onboarding (`src/app/onboarding/page.tsx`)
 - Step 1: Enter invite code (text input)
 - Step 2: Enter your name (text input)
-- Step 3: Connect GemWallet (button → `getWalletAddress()`)
-- NFT minted automatically server-side (no manual acceptance step)
+- Step 3: Connect wallet (button → xrpl-connect picker → GemWallet) → signer keypair generated client-side → joined
+- NFT minted server-side automatically + offer created. Optional "Claim your membership card" button to accept the NFT into their wallet.
 - Human language: "Welcome to the community! Your membership card is ready."
 
 ### Create Fund (`src/app/fund/create/page.tsx`)
@@ -577,7 +605,7 @@ async hashFile(file: File): Promise<string>
 ### Contribute (`src/app/fund/[fundId]/contribute/page.tsx`)
 - Amount input pre-filled with minimum (e.g. "5 XRP")
 - Option to give more (slider or manual input)
-- "Send contribution" button → builds Payment TX → GemWallet signs and submits
+- "Send contribution" button → builds Payment TX → wallet signs and submits via xrpl-connect
 - Success state: "Your contribution is secured! Thank you." with pulse animation
 - Post-success: calls `POST /api/fund/[fundId]/contribute` with the txHash to record it
 
@@ -598,8 +626,8 @@ async hashFile(file: File): Promise<string>
 - RequestProgressTracker placeholder (shows status)
 - Time remaining countdown
 - Two buttons:
-  - "I support this" (green) → fetches unsigned EscrowFinish TX → GemWallet multi-sign → POST signature to API
-  - "I'll pass" (gray) → POST pass vote → no on-chain action, anonymous
+  - "I support this" (green) → fetches unsigned EscrowFinish TX → client-side `wallet.sign(tx, true)` with signer key from localStorage → POST signed blob to API
+  - "I'll pass" (gray) → does nothing, no API call, no record — anonymous by design (per idea doc 3.5)
 - Human language: "Sarah needs help — she has a medical emergency."
 
 ---
@@ -622,7 +650,8 @@ Each step is a self-contained unit of work that can be done in one conversation.
 
 ### Step 1: Project Scaffolding
 - `npx create-next-app` with TypeScript + Tailwind + App Router
-- Install all deps: `xrpl`, `@gemwallet/api`, `framer-motion`, `lucide-react`, `prisma`, `@prisma/client`, `five-bells-condition`, `swr`, `zod`
+- Install all deps: `xrpl`, `xrpl-connect`, `framer-motion`, `lucide-react`, `prisma`, `@prisma/client`, `swr`, `zod`
+- Note: `xrpl.js` v4 works in the browser out of the box (no polyfills needed since v3.0 via `@xrplf/isomorphic`)
 - Create `.env.local` template
 - Set up `tailwind.config.ts` with dark theme colors
 - Create `globals.css` with Tailwind imports
@@ -653,18 +682,20 @@ Each step is a self-contained unit of work that can be done in one conversation.
 
 ### Step 5: XRPL Payment + Conditions
 - Create `src/lib/xrpl/payment.ts` — buildContributionTx, buildReleaseTx
-- Create `src/lib/xrpl/conditions.ts` — generateConditionAndFulfillment (using five-bells-condition)
+- Create `src/lib/xrpl/conditions.ts` — generateConditionAndFulfillment (manual implementation with Node.js `crypto`)
 - Create `src/lib/crypto/hash.ts` — client-side SHA-256
+- **Critical test:** Generate a condition+fulfillment pair, create a testnet escrow with the condition, finish it with the fulfillment. If this fails, the encoding is wrong — fix before proceeding.
 - **Files created:** `src/lib/xrpl/payment.ts`, `src/lib/xrpl/conditions.ts`, `src/lib/crypto/hash.ts`
 
 ### Step 6: XRPL Escrow
 - Create `src/lib/xrpl/escrow.ts` — createEscrow, buildEscrowFinishTx, cancelEscrow
-- **Test:** Create a testnet escrow, then finish it with fulfillment
+- **Test:** Create a testnet escrow with crypto-condition, then finish it with fulfillment — validates both conditions.ts and escrow.ts together
 - **Files created:** `src/lib/xrpl/escrow.ts`
 
 ### Step 7: XRPL Multi-Signature
 - Create `src/lib/xrpl/multisig.ts` — setupSignerList, addSigner, removeSigner, combineSignatures, submitMultiSigned
-- **Test:** Set up a 2-of-3 signer list on a testnet account, sign a TX with 2 signers, submit
+- **Test 1:** Set up a 2-of-3 signer list on a testnet account, sign a Payment TX with 2 signers via `wallet.sign(tx, true)`, combine, submit — validates basic multi-sign flow
+- **Test 2:** Set up signer list, create an escrow with condition, build EscrowFinish TX, multi-sign it with 2 signers, submit — validates that **EscrowFinish can be multi-signed** (critical for the voting mechanism)
 - **Files created:** `src/lib/xrpl/multisig.ts`
 
 ### Step 8: XRPL NFT (Soulbound)
@@ -675,17 +706,22 @@ Each step is a self-contained unit of work that can be done in one conversation.
 ### ~~Step 9: XRPL WebSocket Subscriptions~~ — REMOVED
 > Replaced by SWR polling. No files to create.
 
-### Step 10: GemWallet Integration
-- Create `src/lib/gemwallet/client.ts` — checkGemWallet, getWalletAddress, signTransaction, multiSignTransaction, submitTransaction
-- Create `src/contexts/WalletContext.tsx` — React context with address, isConnected, connect, disconnect (persists in localStorage)
+### Step 10: Wallet Integration (two layers)
+- Install `xrpl-connect` (by XRPL Commons) for wallet connection + payments
+- Create `src/lib/wallet/client.ts` — connectWallet, getWalletAddress, signTransaction, submitTransaction. Via xrpl-connect unified API.
+- Create `src/lib/wallet/signer.ts` — generateSignerKeypair, getSignerForFund, multiSignTransaction. Uses xrpl.js directly in the browser for client-side multi-signing. Guaranteed correct multi-sign blob format via `wallet.sign(tx, true)`.
+- Create `src/contexts/WalletContext.tsx` — React context with address, isConnected, walletType, signerAddress, connect, disconnect (persists in localStorage)
 - Create `src/lib/hooks/useWallet.ts` — convenience hook
-- **Files created:** `src/lib/gemwallet/client.ts`, `src/contexts/WalletContext.tsx`, `src/lib/hooks/useWallet.ts`
+- **Connection + payments:** via xrpl-connect (GemWallet confirmed working)
+- **Multi-sign voting:** via xrpl.js client-side signer keypairs (stored in localStorage, guaranteed correct format)
+- **Files created:** `src/lib/wallet/client.ts`, `src/lib/wallet/signer.ts`, `src/contexts/WalletContext.tsx`, `src/lib/hooks/useWallet.ts`
 
 ### Step 11: UI Components
-- Create all UI components: Button, Card, Input, Modal, Badge, Spinner
+- Use existing shadcn/ui components (card, button, input, badge, dialog, etc. — already installed)
+- Add any missing shadcn components via `npx shadcn add <component>`
 - Create layout components: Header, PageShell
 - Create ConnectWallet component
-- **Files created:** `src/components/ui/*.tsx`, `src/components/layout/*.tsx`, `src/components/wallet/ConnectWallet.tsx`
+- **Files created:** `src/components/layout/*.tsx`, `src/components/wallet/ConnectWallet.tsx`
 
 ### Step 12: Placeholder Animation Components
 - Create `src/components/animations/HeartbeatPulse.tsx` — correct props interface + simple placeholder visual (green/orange/red circle with balance text)
@@ -707,11 +743,12 @@ Each step is a self-contained unit of work that can be done in one conversation.
 - **Files created:** `src/app/api/fund/[fundId]/contribute/route.ts`
 
 ### Step 15: Request + Vote API Routes
-- Create `POST /api/fund/[fundId]/request` — create request + escrow
+- Create `POST /api/fund/[fundId]/request` — create request + escrow (check `getAvailableBalance()` before escrow creation)
 - Create `GET /api/fund/[fundId]/request` — list requests
 - Create `GET /api/fund/[fundId]/request/[requestId]` — request details + unsigned TX for voting
 - Create `POST /api/fund/[fundId]/request/[requestId]/vote` — cast vote + signature collection + quorum check + auto-release
-- **Files created:** `src/app/api/fund/[fundId]/request/route.ts`, `src/app/api/fund/[fundId]/request/[requestId]/route.ts`, `src/app/api/fund/[fundId]/request/[requestId]/vote/route.ts`
+- Create `POST /api/fund/[fundId]/request/[requestId]/retry-release` — re-collect stored vote blobs and retry `submitMultiSigned()` if previous submission failed
+- **Files created:** `src/app/api/fund/[fundId]/request/route.ts`, `src/app/api/fund/[fundId]/request/[requestId]/route.ts`, `src/app/api/fund/[fundId]/request/[requestId]/vote/route.ts`, `src/app/api/fund/[fundId]/request/[requestId]/retry-release/route.ts`
 
 ### Step 16: Fund Components
 - Create FundCard, MemberList, ContributionHistory, PoolStats
@@ -725,7 +762,7 @@ Each step is a self-contained unit of work that can be done in one conversation.
 
 ### Step 18: Landing Page + Onboarding Page
 - Create `src/app/page.tsx` — landing with wallet connection + fund list
-- Create `src/app/onboarding/page.tsx` — invite code → name → connect → accept NFT
+- Create `src/app/onboarding/page.tsx` — invite code → name → connect wallet → joined
 - **Files created:** `src/app/page.tsx`, `src/app/onboarding/page.tsx`
 
 ### Step 19: Create Fund Page
@@ -738,7 +775,7 @@ Each step is a self-contained unit of work that can be done in one conversation.
 - **Files created:** `src/app/fund/[fundId]/page.tsx`
 
 ### Step 21: Contribute Page
-- Create `src/app/fund/[fundId]/contribute/page.tsx` — amount input + GemWallet sign + success state
+- Create `src/app/fund/[fundId]/contribute/page.tsx` — amount input + wallet sign + success state
 - **Files created:** `src/app/fund/[fundId]/contribute/page.tsx`
 
 ### Step 22: Emergency Request Page
@@ -760,8 +797,8 @@ Each step is a self-contained unit of work that can be done in one conversation.
 
 ## What YOU Must Do (cannot be automated)
 
-1. **Install GemWallet browser extension** from the Chrome Web Store
-2. **Switch GemWallet to XRPL Testnet** — Settings → Network → Testnet
+1. **Install GemWallet** (Chrome extension) — confirmed working for connection + payments. Other wallets (Xaman, Crossmark) may also work but are untested.
+2. **Switch wallet to XRPL Testnet** — GemWallet: Settings (gear icon) > Network > Testnet
 3. **Create `.env.local`** (I'll provide the template, you just create the file):
    ```
    XRPL_NETWORK=wss://s.altnet.rippletest.net:51233
@@ -769,7 +806,7 @@ Each step is a self-contained unit of work that can be done in one conversation.
    DATABASE_URL="file:./dev.db"
    ESCROW_EXPIRY_SECONDS=600
    ```
-4. **For multi-user demo:** Use multiple Chrome profiles, each with GemWallet installed and a separate testnet wallet
+4. **For multi-user demo:** Use multiple Chrome profiles (each with GemWallet installed), each with a separate testnet wallet
 5. **Fund testnet wallets** — The app uses the faucet API automatically, but you can also get test XRP at faucet.altnet.rippletest.net
 
 ---
@@ -777,9 +814,9 @@ Each step is a self-contained unit of work that can be done in one conversation.
 ## Verification Plan (End-to-End Test)
 
 1. **Start the app:** `npm run dev` → visit `http://localhost:3000`
-2. **Connect wallet:** Click "Connect GemWallet" → verify address shown
+2. **Connect wallet:** Click "Connect Wallet" → pick wallet from popup → verify address shown
 3. **Create fund:** Fill form → verify fund wallet created on testnet explorer → verify invite code shown
-4. **Join fund (2nd profile):** Enter invite code → verify added to signer list → verify NFT minted
+4. **Join fund (2nd profile):** Enter invite code → verify signer keypair generated → verify added to signer list on-chain → verify NFT minted on explorer
 5. **Contribute:** Each member contributes 20 XRP → verify balance on dashboard + heartbeat pulse
 6. **Submit request:** One member submits request → verify escrow created on-chain → verify voting UI appears
 7. **Vote:** Other members vote "I support" → verify signatures collected → when quorum reached, verify funds released
@@ -793,10 +830,14 @@ Each step is a self-contained unit of work that can be done in one conversation.
 
 | Risk | Mitigation |
 |------|-----------|
-| GemWallet multi-sign might not support `multisign: true` | User will test manually. Fall back: server-side signing with stored seed for demo. Document the limitation. |
-| Crypto-conditions encoding is tricky | Use `five-bells-condition` npm package for correct RFC encoding. Manual `.d.ts` declaration file if no @types available. |
-| Escrow creation might fail if fund wallet has insufficient reserve | Fund wallet starts with 1000 test XRP; reserve is 2 XRP + 2 XRP per escrow. **Add cleanup of cancelled/finished escrows to reclaim reserves.** |
-| Signer list changes invalidate pending multi-sign TXs | Block signer list changes while a vote is active |
+| Signer address ≠ member's wallet address | Idea doc says "add member's address as signer" (3.2), but XRPL multi-sign requires specific blob format (`wallet.sign(tx, true)`) that browser wallets may not produce. **Technical constraint:** We use client-side signer keypairs instead — the signer address on-chain is a generated keypair, not the member's wallet. The member's wallet address is stored in DB and linked to their signer. The multi-sign is still 100% on-chain, just with a dedicated signing key per member. |
+| Signer key lost if browser data cleared | Member can be removed from SignerList and re-added with a new key. For hackathon demo, this won't happen. |
+| Crypto-conditions encoding is tricky | Implement PREIMAGE-SHA-256 manually with Node.js `crypto` module (~15 lines). **Must be tested immediately** with a real testnet escrow create+finish cycle in Step 5-6. |
+| Escrow creation might fail if fund wallet has insufficient reserve | Fund wallet starts with 1000 test XRP; reserve = 10 XRP base + 2 XRP per signer + 2 XRP per escrow. **`getAvailableBalance()` checks reserve before every on-chain operation.** Add cleanup of cancelled/finished escrows to reclaim reserves. |
+| SignerList reserve can exhaust fund wallet | Each signer adds 2 XRP reserve. With 20+ members = 40+ XRP locked. **Add reserve check before `addSigner()` in join flow.** Reject with clear error if insufficient. |
+| Signer list changes invalidate pending multi-sign TXs | Block signer list changes while a vote is active. Enforced in `POST /api/fund/[fundId]/members` — reject if any request is in "voting" status. |
+| Inactive member still in SignerList | Member marked "inactive" in DB loses vote rights (API-enforced), but their signer key is still on-chain. Acceptable for hackathon — full removal would require on-chain `removeSigner()` call on inactivity. |
+| Multi-sign submission fails after quorum | Store signed blobs in Vote table. Add `POST /api/fund/[fundId]/request/[requestId]/retry-release` to re-collect stored blobs and retry `submitMultiSigned()`. |
 | SQLite concurrent writes | Use Prisma's built-in connection pooling; hackathon-scale traffic is fine |
 | Partial failure during fund creation | Wrap fund creation in try/catch with rollback (delete DB record on chain failure) or mark fund status as "failed" |
 | Members don't know there's a vote pending | Dashboard shows active requests with a prominent "X votes pending" badge. No push notifications for hackathon. |
@@ -806,6 +847,11 @@ Each step is a self-contained unit of work that can be done in one conversation.
 ## Design Decisions (Post-Review)
 
 1. **Drop WebSocket subscriptions (Step 9) — use SWR polling only.** Both mechanisms overlap. SWR polling at 5s is simpler and less bug-prone for hackathon. Remove `src/lib/xrpl/subscribe.ts` from the plan.
-2. **Simplify NFT acceptance.** Skip `NFTokenAcceptOffer` step in onboarding. Mint NFT directly to recipient (server-side) to reduce friction. If XRPL requires a two-step mint+offer flow, auto-accept server-side using the fund wallet.
+2. **NFT minting: server-side mint + offer, accept optional.** `NFTokenMint` always mints to the issuer (fund wallet). Flow: server mints NFT + creates `NFTokenCreateOffer` (amount=0, Destination=member) during join. The NFT exists on-chain immediately. Member can accept the offer later via a "Claim your membership card" button (optional UX step, not blocking). For the demo, the NFT is minted and visible on the XRPL explorer — this proves the soulbound membership mechanism works (per idea doc 3.2, 4.1).
 3. **Escrow cleanup.** On dashboard load, check for expired escrows → cancel them → reclaim reserves. Add to `GET /api/fund/[fundId]` logic.
-4. **GemWallet multi-sign.** User tests this independently. If it doesn't work, voting falls back to server-side signing with stored fund wallet seed.
+4. **Drop `five-bells-condition` — implement PREIMAGE-SHA-256 manually.** The package is unmaintained (2019) and may break with Node 20+. The encoding is ~15 lines with Node's `crypto` module.
+5. **No webpack polyfills needed for `xrpl.js` in browser.** Since v3.0, `xrpl.js` uses `@xrplf/isomorphic` which handles browser/Node differences internally (`@noble/hashes` in browser, native `crypto` in Node). Works out of the box with Next.js 16.
+6. **shadcn/ui for all base UI components.** Already installed (card, button, input, badge, dialog, etc.). No custom Button/Card/Input/Modal needed.
+7. **Dual-mode wallet architecture.** Layer 1: `xrpl-connect` (by XRPL Commons — hackathon organizers) for wallet connection + payments. GemWallet confirmed working (tested 2026-03-21). Layer 2: client-side signer keypairs via `xrpl.js` in the browser for multi-sign voting. The idea doc specifies "add member's address as signer" but XRPL multi-sign requires blobs produced by `wallet.sign(tx, true)` — browser wallets don't expose this. Technical constraint, not a design choice. The multi-sign is still 100% on-chain.
+8. **Escrow cleanup on dashboard load.** Check for expired escrows → cancel them → reclaim reserves. Also add `getAvailableBalance()` to prevent operations when reserve is insufficient.
+9. **Retry mechanism for failed multi-sign submissions.** If `submitMultiSigned()` fails after quorum, stored vote blobs can be re-collected and retried via a dedicated API endpoint.
