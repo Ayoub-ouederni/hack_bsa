@@ -27,3 +27,11 @@ export interface CreateEscrowResult {
   escrowSequence: number;
   txHash: string;
 }
+
+export interface BuildEscrowFinishParams {
+  ownerAddress: string;
+  escrowSequence: number;
+  conditionHex: string;
+  fulfillmentHex: string;
+  signerCount?: number;
+}
