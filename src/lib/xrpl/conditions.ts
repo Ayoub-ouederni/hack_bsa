@@ -49,13 +49,17 @@ function encodeCondition(fingerprint: Buffer): Buffer {
   return buf;
 }
 
-export function conditionFromPreimage(preimage: Buffer): string {
-  const hash = createHash("sha256").update(preimage).digest();
+export function conditionFromPreimage(preimage: Buffer | string): string {
+  const buf =
+    typeof preimage === "string" ? Buffer.from(preimage, "hex") : preimage;
+  const hash = createHash("sha256").update(buf).digest();
   return encodeCondition(hash).toString("hex").toUpperCase();
 }
 
-export function fulfillmentFromPreimage(preimage: Buffer): string {
-  return encodeFulfillment(preimage).toString("hex").toUpperCase();
+export function fulfillmentFromPreimage(preimage: Buffer | string): string {
+  const buf =
+    typeof preimage === "string" ? Buffer.from(preimage, "hex") : preimage;
+  return encodeFulfillment(buf).toString("hex").toUpperCase();
 }
 
 export function isValidConditionHex(hex: string): boolean {
