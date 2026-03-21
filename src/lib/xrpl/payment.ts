@@ -67,7 +67,11 @@ export async function canAffordContribution(
   };
 }
 
-const BASE_FEE_DROPS = 12;
+export const BASE_FEE_DROPS = 12;
+
+export function calculateMultiSignFee(signerCount: number): number {
+  return BASE_FEE_DROPS * (1 + signerCount);
+}
 const LEDGER_OFFSET_STANDARD = 20;
 const LEDGER_OFFSET_MULTISIGN = 75;
 
@@ -130,9 +134,8 @@ export async function buildReleaseTx(
   const client = await getClient();
   const currentLedger = await client.getLedgerIndex();
 
-  const baseFee = BASE_FEE_DROPS;
   const signerCount = params.signerCount ?? 1;
-  const fee = String(baseFee * (1 + signerCount));
+  const fee = String(calculateMultiSignFee(signerCount));
   const sequence = await getAccountSequence(params.fundWalletAddress);
 
   const tx: Payment = {
