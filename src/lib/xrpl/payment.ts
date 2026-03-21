@@ -79,14 +79,7 @@ export async function buildContributionTx(
     Account: params.fromAddress,
     Destination: params.fundWalletAddress,
     Amount: String(params.amountDrops),
-    Memos: [
-      {
-        Memo: {
-          MemoType: toHex(MEMO_TYPES.CONTRIBUTION),
-          MemoData: toHex(params.fundId),
-        },
-      },
-    ],
+    Memos: [buildMemo(MEMO_TYPES.CONTRIBUTION, params.fundId)],
     LastLedgerSequence: currentLedger + LEDGER_OFFSET_STANDARD,
   };
 
@@ -124,14 +117,7 @@ export async function buildReleaseTx(
     Fee: fee,
     Sequence: sequence,
     SigningPubKey: "",
-    Memos: [
-      {
-        Memo: {
-          MemoType: toHex(MEMO_TYPES.RELEASE),
-          MemoData: toHex(params.requestId),
-        },
-      },
-    ],
+    Memos: [buildMemo(MEMO_TYPES.RELEASE, params.requestId)],
     LastLedgerSequence: currentLedger + LEDGER_OFFSET_MULTISIGN,
   };
 
