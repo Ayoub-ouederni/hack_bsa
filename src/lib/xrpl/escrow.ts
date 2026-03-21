@@ -74,3 +74,15 @@ function validateAmount(amountDrops: number): void {
     );
   }
 }
+
+export async function canCreateEscrow(
+  fundWalletAddress: string,
+  amountDrops: number
+): Promise<{ canCreate: boolean; availableDrops: number }> {
+  const available = await getAvailableBalance(fundWalletAddress);
+  const totalNeeded = amountDrops + OWNER_RESERVE_DROPS + BASE_FEE_DROPS;
+  return {
+    canCreate: available >= totalNeeded,
+    availableDrops: available,
+  };
+}
