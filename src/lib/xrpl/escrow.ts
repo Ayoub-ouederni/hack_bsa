@@ -200,4 +200,8 @@ export async function cancelEscrow(
     OfferSequence: params.escrowSequence,
     LastLedgerSequence: currentLedger + LEDGER_OFFSET_ESCROW,
   };
+
+  const prepared = await client.autofill(tx);
+  const signed = wallet.sign(prepared);
+  const result = await client.submitAndWait(signed.tx_blob);
 }
