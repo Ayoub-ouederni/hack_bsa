@@ -15,6 +15,9 @@ export const MEMO_TYPES = {
   RELEASE: "pulse/release",
 } as const;
 
+const LEDGER_OFFSET_STANDARD = 20;
+const LEDGER_OFFSET_MULTISIGN = 75;
+
 export interface ContributionTxParams {
   fromAddress: string;
   fundWalletAddress: string;
@@ -57,7 +60,7 @@ export async function buildContributionTx(
         },
       },
     ],
-    LastLedgerSequence: currentLedger + 20,
+    LastLedgerSequence: currentLedger + LEDGER_OFFSET_STANDARD,
   };
 
   return tx;
@@ -93,7 +96,7 @@ export async function buildReleaseTx(
         },
       },
     ],
-    LastLedgerSequence: currentLedger + 20,
+    LastLedgerSequence: currentLedger + LEDGER_OFFSET_MULTISIGN,
   };
 
   return tx;
