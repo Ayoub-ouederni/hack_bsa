@@ -11,6 +11,18 @@ export async function hashText(text: string): Promise<string> {
   return bufferToHex(hashBuffer);
 }
 
+export function isValidSha256Hex(hash: string): boolean {
+  return /^[0-9a-f]{64}$/.test(hash);
+}
+
+export async function verifyFileHash(
+  file: File,
+  expectedHash: string
+): Promise<boolean> {
+  const actualHash = await hashFile(file);
+  return actualHash === expectedHash.toLowerCase();
+}
+
 function bufferToHex(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   return Array.from(bytes)
