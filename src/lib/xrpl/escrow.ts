@@ -160,4 +160,8 @@ export async function buildEscrowFinishTx(
   if (!isValidFulfillmentHex(params.fulfillmentHex)) {
     throw new Error("Invalid fulfillment hex format");
   }
+
+  const client = await getClient();
+  const currentLedger = await client.getLedgerIndex();
+  const sequence = await getAccountSequence(params.ownerAddress);
 }
