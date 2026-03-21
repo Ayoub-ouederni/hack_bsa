@@ -1,4 +1,4 @@
-import type { AccountInfoResponse } from "xrpl";
+import type { AccountInfoResponse, AccountObjectsResponse } from "xrpl";
 import { xrpToDrops } from "../utils/xrp";
 import { getClient } from "./client";
 
