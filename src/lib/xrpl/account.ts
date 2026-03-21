@@ -213,6 +213,39 @@ export async function getSignerList(
   };
 }
 
+export interface NFTokenInfo {
+  nftokenId: string;
+  issuer: string;
+  taxon: number;
+  flags: number;
+  uri?: string;
+}
+
+export async function getNFTs(address: string): Promise<NFTokenInfo[]> {
+  let response;
+  try {
+    const client = await getClient();
+    response = await client.request({
+      command: "account_nfts",
+      account: address,
+      ledger_index: "validated",
+    });
+  } catch (error) {
+    if (isAccountNotFound(error)) {
+      return [];
+    }
+    throw error;
+  }
+
+  return response.result.account_nfts.map((nft) => ({
+    nftokenId: nft.NFTokenID,
+    issuer: nft.Issuer,
+    taxon: nft.NFTokenTaxon,
+    flags: nft.Flags,
+    uri: nft.URI,
+  }));
+}
+
 export async function accountExists(address: string): Promise<boolean> {
   const info = await getAccountInfo(address);
   return info !== null;
