@@ -76,6 +76,18 @@ export function getEscrowTimeRemaining(cancelAfterRipple: number): number {
   return Math.max(0, cancelAfterRipple - nowRipple);
 }
 
+export function calculateEscrowExpiry(
+  cancelAfterSeconds?: number
+): { rippleTime: number; date: Date } {
+  const seconds = cancelAfterSeconds ?? getEscrowExpirySeconds();
+  const unixExpiry = Math.floor(Date.now() / 1000) + seconds;
+  const rippleTime = unixToRippleTime(unixExpiry);
+  return {
+    rippleTime,
+    date: new Date(unixExpiry * 1000),
+  };
+}
+
 export function isEscrowExpired(cancelAfterRipple: number): boolean {
   const nowRipple = unixToRippleTime(Math.floor(Date.now() / 1000));
   return nowRipple >= cancelAfterRipple;
