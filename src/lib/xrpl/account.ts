@@ -12,6 +12,17 @@ export interface SignerListInfo {
   signerEntries: SignerEntryInfo[];
 }
 
+export interface TxHistoryEntry {
+  hash: string;
+  type: string;
+  account: string;
+  destination?: string;
+  amount?: string;
+  fee: string;
+  date?: number;
+  validated: boolean;
+}
+
 export async function getBalance(address: string): Promise<number> {
   const client = await getClient();
   const xrpBalance = await client.getXrpBalance(address);
