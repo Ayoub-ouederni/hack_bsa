@@ -1,6 +1,9 @@
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 
 export async function hashFile(file: File): Promise<string> {
+  if (file.size === 0) {
+    throw new Error("Cannot hash an empty file");
+  }
   if (file.size > MAX_FILE_SIZE) {
     throw new Error(
       `File too large for hashing: ${(file.size / 1024 / 1024).toFixed(1)} MB (max ${MAX_FILE_SIZE / 1024 / 1024} MB)`
