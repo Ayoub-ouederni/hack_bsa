@@ -62,6 +62,7 @@ export {
   buildContributionTx,
   buildReleaseTx,
   buildMemo,
+  canAffordContribution,
   toHex,
   fromHex,
   decodeMemos,
