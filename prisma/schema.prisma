@@ -22,6 +22,7 @@ model Fund {
   createdAt            DateTime @default(now())
 
   members  Member[]
+  requests Request[]
 }
 
 model Member {
@@ -51,6 +52,7 @@ model Contribution {
 model Request {
   id                  String    @id @default(cuid())
   fundId              String
+  fund                Fund      @relation(fields: [fundId], references: [id])
   requesterAddress    String
   amount              Int
   description         String
