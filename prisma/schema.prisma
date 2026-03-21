@@ -44,3 +44,18 @@ model Contribution {
   txHash    String   @unique
   createdAt DateTime @default(now())
 }
+
+model Request {
+  id                  String    @id @default(cuid())
+  fundId              String
+  requesterAddress    String
+  amount              Int
+  description         String
+  documentHash        String
+  escrowSequence      Int?
+  escrowCondition     String?
+  escrowFulfillment   String?
+  status              String    @default("submitted")
+  expiresAt           DateTime?
+  createdAt           DateTime  @default(now())
+}
