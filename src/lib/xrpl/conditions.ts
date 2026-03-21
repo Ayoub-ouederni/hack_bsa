@@ -65,7 +65,7 @@ export function isValidFulfillmentHex(hex: string): boolean {
 }
 
 export function extractPreimage(fulfillmentHex: string): Buffer {
-  const buf = Buffer.from(fulfillmentHex, "hex");
+  const buf = Buffer.from(fulfillmentHex.toUpperCase(), "hex");
   if (buf.length !== FULFILLMENT_LENGTH || buf[0] !== 0xa0 || buf[2] !== 0x80) {
     throw new Error("Invalid PREIMAGE-SHA-256 fulfillment");
   }
