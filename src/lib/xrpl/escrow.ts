@@ -15,6 +15,8 @@ const DEFAULT_ESCROW_EXPIRY_SECONDS = 600;
 
 const OWNER_RESERVE_DROPS = 2_000_000;
 
+const MIN_ESCROW_EXPIRY_SECONDS = 10;
+
 export interface CreateEscrowParams {
   fundWalletSeed: string;
   recipientAddress: string;
