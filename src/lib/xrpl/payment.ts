@@ -60,13 +60,14 @@ export async function canAffordContribution(
   amountDrops: number
 ): Promise<{ canAfford: boolean; availableDrops: number }> {
   const available = await getAvailableBalance(address);
-  const totalNeeded = amountDrops + 12; // amount + base fee
+  const totalNeeded = amountDrops + BASE_FEE_DROPS;
   return {
     canAfford: available >= totalNeeded,
     availableDrops: available,
   };
 }
 
+const BASE_FEE_DROPS = 12;
 const LEDGER_OFFSET_STANDARD = 20;
 const LEDGER_OFFSET_MULTISIGN = 75;
 
@@ -129,7 +130,7 @@ export async function buildReleaseTx(
   const client = await getClient();
   const currentLedger = await client.getLedgerIndex();
 
-  const baseFee = 12;
+  const baseFee = BASE_FEE_DROPS;
   const signerCount = params.signerCount ?? 1;
   const fee = String(baseFee * (1 + signerCount));
   const sequence = await getAccountSequence(params.fundWalletAddress);
