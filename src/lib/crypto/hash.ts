@@ -1,7 +1,6 @@
 export async function hashFile(file: File): Promise<string> {
   const buffer = await file.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-  return bufferToHex(hashBuffer);
+  return hashArrayBuffer(buffer);
 }
 
 export async function hashArrayBuffer(buffer: ArrayBuffer): Promise<string> {
