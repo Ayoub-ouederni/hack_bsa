@@ -85,6 +85,7 @@ export {
   buildEscrowFinishTx,
   cancelEscrow,
   canCreateEscrow,
+  rippleTimeToUnix,
 } from "./escrow";
 
 export type {
