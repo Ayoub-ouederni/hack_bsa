@@ -42,3 +42,28 @@ export {
 } from "./faucet";
 
 export type { FaucetResult, WalletInfo } from "./faucet";
+
+export {
+  generateConditionAndFulfillment,
+  verifyConditionFulfillment,
+  extractPreimage,
+  conditionFromPreimage,
+  fulfillmentFromPreimage,
+} from "./conditions";
+
+export type { ConditionFulfillment } from "./conditions";
+
+export {
+  buildContributionTx,
+  buildReleaseTx,
+  toHex,
+  fromHex,
+  decodeMemos,
+  MEMO_TYPES,
+} from "./payment";
+
+export type {
+  ContributionTxParams,
+  ReleaseTxParams,
+  MemoData,
+} from "./payment";
