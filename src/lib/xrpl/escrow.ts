@@ -98,6 +98,14 @@ function validateAddress(address: string, label: string): void {
   }
 }
 
+function validateEscrowSequence(sequence: number): void {
+  if (!Number.isInteger(sequence) || sequence < 0) {
+    throw new Error(
+      `Escrow sequence must be a non-negative integer, got: ${sequence}`
+    );
+  }
+}
+
 function validateAmount(amountDrops: number): void {
   if (!Number.isInteger(amountDrops) || amountDrops <= 0) {
     throw new Error(
