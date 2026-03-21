@@ -118,13 +118,21 @@ export async function getAvailableBalance(address: string): Promise<number> {
 export async function getSignerList(
   address: string
 ): Promise<SignerListInfo | null> {
-  const client = await getClient();
-  const response = await client.request({
-    command: "account_objects",
-    account: address,
-    type: "signer_list",
-    ledger_index: "validated",
-  });
+  let response;
+  try {
+    const client = await getClient();
+    response = await client.request({
+      command: "account_objects",
+      account: address,
+      type: "signer_list",
+      ledger_index: "validated",
+    });
+  } catch (error) {
+    if (isAccountNotFound(error)) {
+      return null;
+    }
+    throw error;
+  }
 
   const signerLists = response.result.account_objects;
   if (signerLists.length === 0) {
