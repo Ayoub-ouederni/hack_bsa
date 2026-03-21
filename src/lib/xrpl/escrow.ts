@@ -189,4 +189,15 @@ export async function cancelEscrow(
   validateAddress(params.ownerAddress, "owner");
 
   const wallet = Wallet.fromSeed(params.fundWalletSeed);
+
+  const client = await getClient();
+  const currentLedger = await client.getLedgerIndex();
+
+  const tx: EscrowCancel = {
+    TransactionType: "EscrowCancel",
+    Account: wallet.address,
+    Owner: params.ownerAddress,
+    OfferSequence: params.escrowSequence,
+    LastLedgerSequence: currentLedger + LEDGER_OFFSET_ESCROW,
+  };
 }
