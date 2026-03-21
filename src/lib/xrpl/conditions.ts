@@ -44,3 +44,24 @@ function encodeCondition(fingerprint: Buffer): Buffer {
   buf[38] = 0x20; // value: 32 (preimage size)
   return buf;
 }
+
+export function verifyConditionFulfillment(
+  conditionHex: string,
+  fulfillmentHex: string
+): boolean {
+  const fulBuf = Buffer.from(fulfillmentHex, "hex");
+  if (fulBuf.length !== 36 || fulBuf[0] !== 0xa0 || fulBuf[2] !== 0x80) {
+    return false;
+  }
+
+  const preimage = fulBuf.subarray(4, 36);
+  const hash = createHash("sha256").update(preimage).digest();
+
+  const condBuf = Buffer.from(conditionHex, "hex");
+  if (condBuf.length !== 39 || condBuf[0] !== 0xa0 || condBuf[2] !== 0x80) {
+    return false;
+  }
+
+  const fingerprint = condBuf.subarray(4, 36);
+  return hash.equals(fingerprint);
+}
