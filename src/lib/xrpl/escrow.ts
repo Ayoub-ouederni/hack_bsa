@@ -182,3 +182,11 @@ export async function buildEscrowFinishTx(
 
   return tx;
 }
+
+export async function cancelEscrow(
+  params: CancelEscrowParams
+): Promise<CancelEscrowResult> {
+  validateAddress(params.ownerAddress, "owner");
+
+  const wallet = Wallet.fromSeed(params.fundWalletSeed);
+}
