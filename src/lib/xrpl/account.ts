@@ -43,6 +43,12 @@ export async function getBalance(address: string): Promise<number> {
   }
 }
 
+export async function getOwnerCount(address: string): Promise<number> {
+  const info = await getAccountInfo(address);
+  if (!info) return 0;
+  return info.account_data.OwnerCount;
+}
+
 export async function getAccountInfo(
   address: string,
   options?: { signerLists?: boolean }
