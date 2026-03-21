@@ -31,3 +31,14 @@ export type {
   EscrowInfo,
   NFTokenInfo,
 } from "./account";
+
+export {
+  createTestnetWallet,
+  walletFromSeed,
+  generateWallet,
+  fundExistingWallet,
+  getWalletInfo,
+  createFundWalletWithInfo,
+} from "./faucet";
+
+export type { FaucetResult, WalletInfo } from "./faucet";
