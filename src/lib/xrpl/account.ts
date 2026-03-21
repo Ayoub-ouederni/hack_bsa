@@ -1,4 +1,5 @@
 import type { AccountInfoResponse, AccountObjectsResponse } from "xrpl";
+import { isValidClassicAddress } from "xrpl";
 import { xrpToDrops } from "../utils/xrp";
 import { getClient } from "./client";
 
