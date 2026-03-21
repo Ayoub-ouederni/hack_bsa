@@ -166,4 +166,19 @@ export async function buildEscrowFinishTx(
   const sequence = await getAccountSequence(params.ownerAddress);
   const signerCount = params.signerCount ?? 1;
   const fee = String(calculateMultiSignFee(signerCount));
+
+  const tx: EscrowFinish = {
+    TransactionType: "EscrowFinish",
+    Account: params.ownerAddress,
+    Owner: params.ownerAddress,
+    OfferSequence: params.escrowSequence,
+    Condition: params.conditionHex,
+    Fulfillment: params.fulfillmentHex,
+    Fee: fee,
+    Sequence: sequence,
+    SigningPubKey: "",
+    LastLedgerSequence: currentLedger + LEDGER_OFFSET_ESCROW_FINISH,
+  };
+
+  return tx;
 }
