@@ -1,4 +1,5 @@
 import type { Payment } from "xrpl";
+import { isValidClassicAddress } from "xrpl";
 import { getClient } from "./client";
 
 export function toHex(text: string): string {
@@ -21,9 +22,25 @@ export interface ContributionTxParams {
   fundId: string;
 }
 
+function validateAddress(address: string, label: string): void {
+  if (!isValidClassicAddress(address)) {
+    throw new Error(`Invalid ${label} address: ${address}`);
+  }
+}
+
+function validateAmount(amountDrops: number): void {
+  if (!Number.isInteger(amountDrops) || amountDrops <= 0) {
+    throw new Error(`Amount must be a positive integer (drops), got: ${amountDrops}`);
+  }
+}
+
 export async function buildContributionTx(
   params: ContributionTxParams
 ): Promise<Payment> {
+  validateAddress(params.fromAddress, "sender");
+  validateAddress(params.fundWalletAddress, "fund wallet");
+  validateAmount(params.amountDrops);
+
   const client = await getClient();
   const currentLedger = await client.getLedgerIndex();
 
@@ -56,6 +73,10 @@ export interface ReleaseTxParams {
 export async function buildReleaseTx(
   params: ReleaseTxParams
 ): Promise<Payment> {
+  validateAddress(params.fundWalletAddress, "fund wallet");
+  validateAddress(params.recipientAddress, "recipient");
+  validateAmount(params.amountDrops);
+
   const client = await getClient();
   const currentLedger = await client.getLedgerIndex();
 
