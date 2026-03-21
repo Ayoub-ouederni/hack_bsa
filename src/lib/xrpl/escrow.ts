@@ -22,3 +22,8 @@ export interface CreateEscrowParams {
   conditionHex: string;
   cancelAfterSeconds?: number;
 }
+
+export interface CreateEscrowResult {
+  escrowSequence: number;
+  txHash: string;
+}
