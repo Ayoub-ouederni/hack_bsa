@@ -42,3 +42,10 @@ export function getWalletInfo(wallet: Wallet): WalletInfo {
     publicKey: wallet.publicKey,
   };
 }
+
+export async function createFundWalletWithInfo(): Promise<
+  WalletInfo & { balance: number }
+> {
+  const { wallet, balance } = await createTestnetWallet();
+  return { ...getWalletInfo(wallet), balance };
+}
