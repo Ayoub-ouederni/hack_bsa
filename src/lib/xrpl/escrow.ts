@@ -66,3 +66,11 @@ function validateAddress(address: string, label: string): void {
     throw new Error(`Invalid ${label} address: ${address}`);
   }
 }
+
+function validateAmount(amountDrops: number): void {
+  if (!Number.isInteger(amountDrops) || amountDrops <= 0) {
+    throw new Error(
+      `Amount must be a positive integer (drops), got: ${amountDrops}`
+    );
+  }
+}
