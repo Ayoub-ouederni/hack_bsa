@@ -71,6 +71,11 @@ function getEscrowExpirySeconds(): number {
   return DEFAULT_ESCROW_EXPIRY_SECONDS;
 }
 
+export function isEscrowExpired(cancelAfterRipple: number): boolean {
+  const nowRipple = unixToRippleTime(Math.floor(Date.now() / 1000));
+  return nowRipple >= cancelAfterRipple;
+}
+
 function validateAddress(address: string, label: string): void {
   if (!isValidClassicAddress(address)) {
     throw new Error(`Invalid ${label} address: ${address}`);
