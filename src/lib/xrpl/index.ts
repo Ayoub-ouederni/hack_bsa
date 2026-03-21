@@ -49,6 +49,8 @@ export {
   extractPreimage,
   conditionFromPreimage,
   fulfillmentFromPreimage,
+  isValidConditionHex,
+  isValidFulfillmentHex,
 } from "./conditions";
 
 export type { ConditionFulfillment } from "./conditions";
