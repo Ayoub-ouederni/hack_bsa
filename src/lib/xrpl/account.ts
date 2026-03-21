@@ -24,6 +24,10 @@ export interface TxHistoryEntry {
   validated: boolean;
 }
 
+export function isValidAddress(address: string): boolean {
+  return isValidClassicAddress(address);
+}
+
 function isAccountNotFound(error: unknown): boolean {
   return (
     error instanceof Error &&
