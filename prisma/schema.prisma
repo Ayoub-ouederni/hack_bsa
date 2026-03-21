@@ -59,3 +59,13 @@ model Request {
   expiresAt           DateTime?
   createdAt           DateTime  @default(now())
 }
+
+model Vote {
+  id           String   @id @default(cuid())
+  requestId    String
+  voterAddress String
+  signature    String
+  createdAt    DateTime @default(now())
+
+  @@unique([requestId, voterAddress])
+}
