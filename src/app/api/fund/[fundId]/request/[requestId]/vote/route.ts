@@ -133,7 +133,7 @@ export async function POST(
       const activeMembers = fundRequest.fund.members.filter(
         (m) => m.status === "active"
       );
-      const useZkPath = activeMembers.length > 32;
+      const useZkPath = activeMembers.length > 2; // TEMP: lowered from 32 for testing
 
       if (useZkPath) {
         // ─── ZK PROOF PATH (>32 members) ───
