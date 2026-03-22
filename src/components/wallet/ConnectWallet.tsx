@@ -46,15 +46,16 @@ export function ConnectWallet() {
         <Button
           variant="ghost"
           size="sm"
-          className="font-mono text-xs text-muted-foreground hover:text-foreground"
+          className="text-sm text-muted-foreground hover:text-foreground"
           onClick={handleCopy}
+          title={address}
         >
           {copied ? (
-            <Check className="mr-1.5 h-3 w-3 text-primary" />
+            <Check className="mr-1.5 h-3.5 w-3.5 text-primary" />
           ) : (
-            <Copy className="mr-1.5 h-3 w-3" />
+            <Wallet className="mr-1.5 h-3.5 w-3.5" />
           )}
-          {truncateAddress(address)}
+          {copied ? "Copied!" : "My Wallet"}
         </Button>
         <Button
           variant="ghost"

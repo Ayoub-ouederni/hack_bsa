@@ -120,12 +120,12 @@ export async function getLedgerReserves(): Promise<{
   const state = response.result.state;
   const validatedLedger =
     "validated_ledger" in state ? state.validated_ledger : undefined;
-  // server_state returns reserves in XRP, convert to drops
-  const baseReserveXrp = validatedLedger?.reserve_base ?? 10;
-  const ownerReserveXrp = validatedLedger?.reserve_inc ?? 2;
+  // server_state returns reserves in drops (machine-readable units)
+  const baseReserveDrops = validatedLedger?.reserve_base ?? 10_000_000;
+  const ownerReserveDrops = validatedLedger?.reserve_inc ?? 2_000_000;
   return {
-    baseReserveDrops: baseReserveXrp * 1_000_000,
-    ownerReserveDrops: ownerReserveXrp * 1_000_000,
+    baseReserveDrops,
+    ownerReserveDrops,
   };
 }
 
