@@ -40,9 +40,9 @@ export async function POST(
       );
     }
 
-    // 2. Verify requester is a member
+    // 2. Verify requester is an active member
     const member = fund.members.find(
-      (m) => m.walletAddress === requesterAddress
+      (m) => m.walletAddress === requesterAddress && m.status === "active"
     );
 
     if (!member) {

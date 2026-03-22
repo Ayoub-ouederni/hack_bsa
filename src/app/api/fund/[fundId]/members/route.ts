@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { joinFundSchema, FUND_RULES } from "@/lib/utils/validation";
-import { addSigner, mintMembershipNFT } from "@/lib/xrpl";
+import { joinFundSchema } from "@/lib/utils/validation";
 
 export async function POST(
   request: NextRequest,
@@ -21,7 +20,7 @@ export async function POST(
 
     const input = parsed.data;
 
-    // 1. Find fund by invite code
+    // 1. Find fund and its members
     const fund = await prisma.fund.findUnique({
       where: { id: fundId },
       include: { members: true },
@@ -42,7 +41,7 @@ export async function POST(
       );
     }
 
-    // Check if already a member
+    // Check if already a member (any status)
     const existingMember = fund.members.find(
       (m) => m.walletAddress === input.walletAddress
     );
@@ -53,36 +52,16 @@ export async function POST(
       );
     }
 
-    // 2. Add signer to the fund wallet's on-chain signer list
-    await addSigner({
-      fundWalletSeed: fund.fundWalletSeed,
-      newSigner: { account: input.signerAddress, weight: 1 },
-    });
-
-    // 3. Mint membership NFT
-    const nftResult = await mintMembershipNFT({
-      issuerSeed: fund.fundWalletSeed,
-      recipientAddress: input.walletAddress,
-      fundId,
-    });
-
-    // 4. Create member in database
+    // 2. Create member as "pending" — no on-chain signer, no NFT yet
+    //    The organizer must approve before the member becomes active.
     const member = await prisma.member.create({
       data: {
         fundId,
         walletAddress: input.walletAddress,
         signerAddress: input.signerAddress,
         displayName: input.displayName,
-        nftTokenId: nftResult.nftokenId,
+        status: "pending",
       },
-    });
-
-    // 5. Recalculate quorum (50% of total members including organizer)
-    const totalMembers = fund.members.length + 1; // existing + new member
-    const newQuorum = FUND_RULES.getQuorumRequired(totalMembers);
-    await prisma.fund.update({
-      where: { id: fundId },
-      data: { quorumRequired: newQuorum },
     });
 
     return NextResponse.json(
@@ -92,7 +71,7 @@ export async function POST(
         walletAddress: member.walletAddress,
         signerAddress: member.signerAddress,
         displayName: member.displayName,
-        nftTokenId: member.nftTokenId,
+        status: member.status,
         joinedAt: member.joinedAt.toISOString(),
       },
       { status: 201 }

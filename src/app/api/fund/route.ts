@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
         maxPoolPercent: fund.maxPoolPercent,
         inviteCode: fund.inviteCode,
         createdAt: fund.createdAt.toISOString(),
-        memberCount: fund.members.length,
+        memberCount: fund.members.filter((m) => m.status === "active").length,
         requestCount: fund._count.requests,
       });
     }

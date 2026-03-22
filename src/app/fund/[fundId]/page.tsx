@@ -156,7 +156,7 @@ function NotConnectedState() {
 function FundDashboardContent({ fundId }: { fundId: string }) {
   const router = useRouter();
   const { address } = useWallet();
-  const { data: dashboard, isLoading, error } = useFundDashboard(fundId);
+  const { data: dashboard, isLoading, error, mutate } = useFundDashboard(fundId);
   const { data: allRequests } = useRequests(fundId);
 
   if (isLoading) return <DashboardSkeleton />;
@@ -184,7 +184,7 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
     );
   }
 
-  const { fund, poolBalance, poolHealth, members, activeRequests, recentContributions } =
+  const { fund, poolBalance, poolHealth, members, pendingMembers, activeRequests, recentContributions } =
     dashboard;
 
   // Build a lookup for member names by wallet address
@@ -426,7 +426,11 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
           >
             <MemberList
               members={members}
+              pendingMembers={pendingMembers}
               organizerAddress={fund.organizerAddress}
+              currentWalletAddress={address ?? undefined}
+              fundId={fundId}
+              onMemberApproved={() => mutate()}
             />
           </motion.div>
 

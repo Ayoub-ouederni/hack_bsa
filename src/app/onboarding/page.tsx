@@ -8,6 +8,7 @@ import {
   User,
   Wallet,
   CheckCircle2,
+  Clock,
   ArrowRight,
   ArrowLeft,
   Loader2,
@@ -206,7 +207,7 @@ export default function OnboardingPage() {
       }
 
       setJoinedFundId(fundInfo.id);
-      toast.success(`Joined ${fundInfo.name}!`);
+      toast.success(`Request sent to join ${fundInfo.name}!`);
       goTo("success");
     } catch {
       setError("Something went wrong. Please try again.");
@@ -507,9 +508,9 @@ export default function OnboardingPage() {
                       damping: 12,
                       delay: 0.1,
                     }}
-                    className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/15"
+                    className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/15"
                   >
-                    <CheckCircle2 className="h-8 w-8 text-primary" />
+                    <Clock className="h-8 w-8 text-amber-500" />
                   </motion.div>
 
                   <motion.div
@@ -519,14 +520,15 @@ export default function OnboardingPage() {
                     className="text-center space-y-2"
                   >
                     <h2 className="text-xl font-semibold">
-                      You&apos;re in!
+                      Request sent!
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      Welcome to{" "}
+                      Your request to join{" "}
                       <span className="font-medium text-foreground">
                         {fundInfo.name}
-                      </span>
-                      . Your membership is confirmed and you&apos;re all set.
+                      </span>{" "}
+                      has been submitted. The fund organizer will review and
+                      approve your membership.
                     </p>
                   </motion.div>
 

@@ -12,7 +12,7 @@ export interface Fund {
   createdAt: string;
 }
 
-export type MemberStatus = "active" | "inactive" | "removable";
+export type MemberStatus = "active" | "pending" | "inactive" | "removable";
 
 export interface Member {
   id: string;
@@ -37,11 +37,21 @@ export interface Contribution {
 
 export type PoolHealth = "healthy" | "warning" | "critical";
 
+export interface PendingMember {
+  id: string;
+  fundId: string;
+  walletAddress: string;
+  displayName: string;
+  status: "pending";
+  joinedAt: string;
+}
+
 export interface FundDashboard {
   fund: Fund;
   poolBalance: number;
   poolHealth: PoolHealth;
   members: Member[];
+  pendingMembers: PendingMember[];
   activeRequests: import("./request").Request[];
   recentContributions: (Contribution & { memberName: string })[];
 }

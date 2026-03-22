@@ -55,7 +55,10 @@ export async function GET(
     // Get on-chain pool balance
     const poolBalance = await getAvailableBalance(fund.fundWalletAddress);
 
-    const poolHealth = computePoolHealth(poolBalance, fund.members.length);
+    const activeMembers = fund.members.filter((m) => m.status === "active");
+    const pendingMembers = fund.members.filter((m) => m.status === "pending");
+
+    const poolHealth = computePoolHealth(poolBalance, activeMembers.length);
 
     // Collect recent contributions across all members
     const recentContributions = fund.members
@@ -91,7 +94,7 @@ export async function GET(
       },
       poolBalance,
       poolHealth,
-      members: fund.members.map((m) => ({
+      members: activeMembers.map((m) => ({
         id: m.id,
         fundId: m.fundId,
         walletAddress: m.walletAddress,
@@ -101,6 +104,14 @@ export async function GET(
         lastContribution: m.lastContribution?.toISOString() ?? null,
         status: m.status,
         nftTokenId: m.nftTokenId,
+        joinedAt: m.joinedAt.toISOString(),
+      })),
+      pendingMembers: pendingMembers.map((m) => ({
+        id: m.id,
+        fundId: m.fundId,
+        walletAddress: m.walletAddress,
+        displayName: m.displayName,
+        status: m.status,
         joinedAt: m.joinedAt.toISOString(),
       })),
       activeRequests: fund.requests.map((r) => ({
