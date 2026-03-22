@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback } from "react";
+import { use, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -220,10 +220,10 @@ function ContributeContent({ fundId }: { fundId: string }) {
     }
   }, [address]);
 
-  // Check balance on first render
-  useState(() => {
+  // Check balance when address becomes available
+  useEffect(() => {
     if (address) checkBalance();
-  });
+  }, [address, checkBalance]);
 
   if (isLoading) return <ContributeSkeleton />;
 
