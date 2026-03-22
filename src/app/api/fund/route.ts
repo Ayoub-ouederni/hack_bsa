@@ -173,7 +173,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         members: true,
-        _count: { select: { requests: true } },
+        requests: { select: { status: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -191,7 +191,9 @@ export async function GET(request: NextRequest) {
       inviteCode: fund.inviteCode,
       createdAt: fund.createdAt.toISOString(),
       memberCount: fund.members.length,
-      requestCount: fund._count.requests,
+      requestCount: fund.requests.filter((r) =>
+        ["submitted", "voting", "approved"].includes(r.status)
+      ).length,
     }));
 
     return NextResponse.json(result);
