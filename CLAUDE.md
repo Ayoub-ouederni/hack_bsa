@@ -4,9 +4,7 @@
 
 1. **Toujours lire le fichier PLAN.md en premier** avant de commencer toute tâche. Le plan est la source de vérité pour savoir quoi faire et dans quel ordre.
 
-2. **Minimum 50 commits par phase/étape/module du plan.** Chaque phase, étape ou module défini dans le plan doit donner lieu à au moins 50 commits distincts. Découper le travail en petits commits atomiques et fréquents.
-
-3. **Ne jamais écrire "Co-Authored-By: Claude Code"** dans les messages de commit. Aucune mention de co-authorship Claude dans les commits.
+2. **Ne jamais écrire "Co-Authored-By: Claude Code"** dans les messages de commit. Aucune mention de co-authorship Claude dans les commits.
 
 4. **Commits en anglais.** Tous les messages de commit doivent être rédigés en anglais.
 
@@ -27,6 +25,8 @@
 9. **Langue de l'UI : anglais.** Tous les textes affichés dans l'application (labels, boutons, messages, placeholders) doivent être en anglais.
 
 10. **Ne pas modifier PLAN.md.** Le plan est en lecture seule. Claude le lit pour savoir quoi faire mais ne le modifie jamais.
+
+11. **Utiliser les skills UI obligatoirement.** Pour toute étape ou tâche impliquant du code UI (composants, pages, layouts, formulaires, styling), Claude **doit** invoquer les skills `frontend-ui-ux-engineer`, `shadcn` et/ou `nextjs-shadcn` **avant** d'écrire du code UI. Pas d'exception.
 
 ## Workflow par conversation
 
