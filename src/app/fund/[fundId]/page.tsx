@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,6 +11,8 @@ import {
   HandCoins,
   Plus,
   ExternalLink,
+  ChevronDown,
+  History,
 } from "lucide-react";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -201,6 +203,22 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
           r.status === "approved"
       )
     : activeRequests;
+
+  // Past/completed requests for history section
+  const pastRequests = useMemo(
+    () =>
+      allRequests
+        ? allRequests.filter(
+            (r) =>
+              r.status === "released" ||
+              r.status === "expired" ||
+              r.status === "cancelled"
+          )
+        : [],
+    [allRequests]
+  );
+
+  const [showHistory, setShowHistory] = useState(false);
 
   // Find the first active release for HeartbeatPulse
   const activeRelease = activeRequests.find(
@@ -415,6 +433,79 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
               )}
             </AnimatePresence>
           </motion.div>
+
+          {/* Request history */}
+          {pastRequests.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45 }}
+              className="space-y-4"
+            >
+              <button
+                onClick={() => setShowHistory((v) => !v)}
+                className="flex w-full items-center justify-between rounded-lg px-1 py-1 text-left transition-colors hover:bg-muted/40"
+              >
+                <div className="flex items-center gap-2">
+                  <History className="h-4 w-4 text-muted-foreground" />
+                  <h2 className="text-lg font-semibold tracking-tight">
+                    Request History
+                  </h2>
+                  <Badge variant="outline" className="text-xs">
+                    {pastRequests.length}
+                  </Badge>
+                </div>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                    showHistory && "rotate-180"
+                  )}
+                />
+              </button>
+
+              <AnimatePresence>
+                {showHistory && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-4">
+                      {pastRequests.map((req) => (
+                        <RequestCard
+                          key={req.id}
+                          id={req.id}
+                          requesterAddress={req.requesterAddress}
+                          requesterName={memberNameMap.get(
+                            req.requesterAddress
+                          )}
+                          amount={req.amount}
+                          description={req.description}
+                          status={req.status as RequestStatus}
+                          voteCount={
+                            "voteCount" in req
+                              ? (req.voteCount as number)
+                              : 0
+                          }
+                          quorumRequired={fund.quorumRequired}
+                          timeRemaining={null}
+                          createdAt={req.createdAt}
+                          isOwnRequest={req.requesterAddress === address}
+                          onView={(requestId) =>
+                            router.push(
+                              `/fund/${fundId}/vote/${requestId}`
+                            )
+                          }
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
         </div>
 
         {/* Right column: Members + Contributions */}
