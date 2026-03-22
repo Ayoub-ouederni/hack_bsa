@@ -78,20 +78,30 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const tryReconnect = async () => {
       try {
         setIsConnecting(true);
-        const manager = await getWalletManager();
 
-        // Listen for connect events from auto-reconnect
-        const handleConnect = (account: { address: string }) => {
-          if (!cancelled) {
-            setAddress(account.address);
-            setWalletType(persisted.walletType);
+        // Timeout the entire reconnect attempt to prevent infinite loading
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Auto-reconnect timed out")), 8000)
+        );
+
+        const reconnect = async () => {
+          const manager = await getWalletManager();
+
+          // If manager already connected
+          if (manager.connected && manager.account?.address) {
+            return manager.account.address;
           }
-        };
-        manager.on("connect", handleConnect);
 
-        // If manager already connected (auto-connect succeeded)
-        if (manager.connected && manager.account?.address) {
-          setAddress(manager.account.address);
+          // Try to explicitly reconnect with the persisted wallet type
+          const result = await connectWalletClient(
+            persisted.walletType as WalletType
+          );
+          return result.address;
+        };
+
+        const address = await Promise.race([reconnect(), timeout]);
+        if (!cancelled) {
+          setAddress(address);
           setWalletType(persisted.walletType);
         }
       } catch {

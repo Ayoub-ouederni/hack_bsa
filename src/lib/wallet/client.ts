@@ -49,7 +49,7 @@ export async function getWalletManager(): Promise<WalletManager> {
       walletManager = new mod.WalletManager({
         adapters,
         network,
-        autoConnect: true,
+        autoConnect: false,
       });
       return walletManager;
     })();
@@ -64,12 +64,55 @@ export interface ConnectResult {
   network?: string;
 }
 
+/**
+ * Wait for a browser extension wallet to inject its global object.
+ * GemWallet injects `window.gemwallet`, Crossmark injects `window.crossmark`, etc.
+ * Returns true if detected, false after timeout.
+ */
+async function waitForExtension(
+  walletType: WalletType,
+  timeoutMs = 3000
+): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+
+  const globalKeys: Partial<Record<WalletType, string>> = {
+    gemwallet: "gemwallet",
+    crossmark: "crossmark",
+  };
+
+  const key = globalKeys[walletType];
+  if (!key) return true; // non-extension wallets, skip check
+
+  if ((window as unknown as Record<string, unknown>)[key]) return true;
+
+  return new Promise((resolve) => {
+    const interval = 100;
+    let elapsed = 0;
+    const timer = setInterval(() => {
+      elapsed += interval;
+      if ((window as unknown as Record<string, unknown>)[key]) {
+        clearInterval(timer);
+        resolve(true);
+      } else if (elapsed >= timeoutMs) {
+        clearInterval(timer);
+        resolve(false);
+      }
+    }, interval);
+  });
+}
+
 export async function connectWallet(
   walletType?: WalletType
 ): Promise<ConnectResult> {
   const manager = await getWalletManager();
 
   if (walletType) {
+    // Wait for extension to inject its global before trying to connect
+    const extensionReady = await waitForExtension(walletType);
+    if (!extensionReady) {
+      throw new WalletNotAvailableError(walletType);
+    }
+
     const walletId = resolveWalletId(manager, walletType);
     try {
       const connectPromise = manager.connect(walletId);
