@@ -1,217 +1,82 @@
 "use client";
 
-import type {
-  WalletManager,
-  WalletAccount,
-  SignedTransaction,
-  WalletAdapterInfo,
-} from "xrpl-connect";
-
-let walletManager: WalletManager | null = null;
-let initPromise: Promise<WalletManager> | null = null;
-
-export type WalletType =
-  | "gemwallet"
-  | "xaman"
-  | "crossmark"
-  | "ledger"
-  | "walletconnect";
+import {
+  isInstalled,
+  getAddress,
+  submitTransaction as gemSubmit,
+  signTransaction as gemSign,
+} from "@gemwallet/api";
+import type { SubmittableTransaction } from "xrpl";
 
 export class WalletNotAvailableError extends Error {
-  walletType: WalletType;
-  constructor(walletType: WalletType) {
-    super(`${walletType} is not installed or not available in your browser.`);
+  constructor() {
+    super("GemWallet is not installed or not available in your browser.");
     this.name = "WalletNotAvailableError";
-    this.walletType = walletType;
   }
-}
-
-async function createAdapters(): Promise<unknown[]> {
-  const mod = await import("xrpl-connect");
-  return [
-    new mod.GemWalletAdapter(),
-    new mod.XamanAdapter(),
-    new mod.CrossmarkAdapter(),
-    new mod.LedgerAdapter(),
-    new mod.WalletConnectAdapter(),
-  ];
-}
-
-export async function getWalletManager(): Promise<WalletManager> {
-  if (walletManager) return walletManager;
-
-  if (!initPromise) {
-    initPromise = (async () => {
-      const mod = await import("xrpl-connect");
-      const adapters = await createAdapters();
-      const network = process.env.NEXT_PUBLIC_XRPL_NETWORK || "testnet";
-
-      walletManager = new mod.WalletManager({
-        adapters,
-        network,
-        autoConnect: false,
-      });
-      return walletManager;
-    })();
-  }
-
-  return initPromise;
 }
 
 export interface ConnectResult {
   address: string;
-  walletType: string;
-  network?: string;
 }
 
-/**
- * Wait for a browser extension wallet to inject its global object.
- * GemWallet injects `window.gemwallet`, Crossmark injects `window.crossmark`, etc.
- * Returns true if detected, false after timeout.
- */
-async function waitForExtension(
-  walletType: WalletType,
-  timeoutMs = 3000
-): Promise<boolean> {
-  if (typeof window === "undefined") return false;
-
-  const globalKeys: Partial<Record<WalletType, string>> = {
-    gemwallet: "gemwallet",
-    crossmark: "crossmark",
-  };
-
-  const key = globalKeys[walletType];
-  if (!key) return true; // non-extension wallets, skip check
-
-  if ((window as unknown as Record<string, unknown>)[key]) return true;
-
-  return new Promise((resolve) => {
-    const interval = 100;
-    let elapsed = 0;
-    const timer = setInterval(() => {
-      elapsed += interval;
-      if ((window as unknown as Record<string, unknown>)[key]) {
-        clearInterval(timer);
-        resolve(true);
-      } else if (elapsed >= timeoutMs) {
-        clearInterval(timer);
-        resolve(false);
-      }
-    }, interval);
-  });
-}
-
-export async function connectWallet(
-  walletType?: WalletType
-): Promise<ConnectResult> {
-  const manager = await getWalletManager();
-
-  if (walletType) {
-    // Wait for extension to inject its global before trying to connect
-    const extensionReady = await waitForExtension(walletType);
-    if (!extensionReady) {
-      throw new WalletNotAvailableError(walletType);
-    }
-
-    const walletId = resolveWalletId(manager, walletType);
-    try {
-      const connectPromise = manager.connect(walletId);
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Connection timed out. Make sure the wallet extension is installed and unlocked.")), 15000)
-      );
-      const account: WalletAccount = await Promise.race([connectPromise, timeoutPromise]);
-      return {
-        address: account.address,
-        walletType,
-        network: account.network,
-      };
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      if (
-        message.toLowerCase().includes("not currently available") ||
-        message.toLowerCase().includes("not installed") ||
-        message.toLowerCase().includes("not found") ||
-        message.toLowerCase().includes("timed out")
-      ) {
-        throw new WalletNotAvailableError(walletType);
-      }
-      throw err;
-    }
+export async function connectWallet(): Promise<ConnectResult> {
+  const installed = await isInstalled();
+  if (!installed.result.isInstalled) {
+    throw new WalletNotAvailableError();
   }
 
-  const adapters: WalletAdapterInfo[] = manager.wallets;
-  if (!adapters || adapters.length === 0) {
-    throw new Error("No wallet adapters available");
+  const response = await getAddress();
+  if (!response.result) {
+    throw new Error("Failed to get address from GemWallet.");
   }
-  const account: WalletAccount = await manager.connect(adapters[0].id);
-  return {
-    address: account.address,
-    walletType: adapters[0].id,
-    network: account.network,
-  };
-}
 
-export async function getWalletAddress(): Promise<string | null> {
-  const manager = await getWalletManager();
-  return manager.connected ? manager.account?.address ?? null : null;
-}
-
-export async function isWalletConnected(): Promise<boolean> {
-  const manager = await getWalletManager();
-  return manager.connected;
+  return { address: response.result.address };
 }
 
 export async function disconnectWallet(): Promise<void> {
-  const manager = await getWalletManager();
-  if (manager.connected) {
-    await manager.disconnect();
-  }
-}
-
-export interface SignResult {
-  tx_blob: string;
-  hash?: string;
-}
-
-export async function signTransaction(
-  transaction: Record<string, unknown>
-): Promise<SignResult> {
-  const manager = await getWalletManager();
-  if (!manager.connected) {
-    throw new Error("No wallet connected. Connect a wallet first.");
-  }
-  const result: SignedTransaction = await manager.sign(transaction);
-  return {
-    tx_blob: result.tx_blob,
-    hash: result.hash,
-  };
+  // GemWallet is stateless — we just clear local state in the context.
 }
 
 export interface SubmitResult {
   hash: string;
-  tx_blob?: string;
 }
 
 export async function submitTransaction(
   transaction: Record<string, unknown>
 ): Promise<SubmitResult> {
-  const manager = await getWalletManager();
-  if (!manager.connected) {
-    throw new Error("No wallet connected. Connect a wallet first.");
+  const installed = await isInstalled();
+  if (!installed.result.isInstalled) {
+    throw new WalletNotAvailableError();
   }
-  const result: SignedTransaction = await manager.signAndSubmit(transaction);
-  return {
-    hash: result.hash ?? result.id ?? "",
-    tx_blob: result.tx_blob,
-  };
+
+  const response = await gemSubmit({
+    transaction: transaction as unknown as SubmittableTransaction,
+  });
+  if (!response.result) {
+    throw new Error("Transaction was rejected or failed.");
+  }
+
+  return { hash: response.result.hash };
 }
 
-function resolveWalletId(manager: WalletManager, walletType: WalletType): string {
-  const wallets: WalletAdapterInfo[] = manager.wallets;
-  if (!wallets) return walletType;
+export interface SignResult {
+  tx_blob: string;
+}
 
-  const match = wallets.find(
-    (w) => w.id.toLowerCase().includes(walletType.toLowerCase())
-  );
-  return match?.id ?? walletType;
+export async function signTransaction(
+  transaction: Record<string, unknown>
+): Promise<SignResult> {
+  const installed = await isInstalled();
+  if (!installed.result.isInstalled) {
+    throw new WalletNotAvailableError();
+  }
+
+  const response = await gemSign({
+    transaction: transaction as unknown as SubmittableTransaction,
+  });
+  if (!response.result?.signature) {
+    throw new Error("Transaction signing was rejected.");
+  }
+
+  return { tx_blob: response.result.signature };
 }

@@ -11,7 +11,7 @@
 5. **Stack technique — ne pas dévier :**
    - Next.js 16 (App Router) + TypeScript + Tailwind CSS + Framer Motion
    - XRPL Testnet via `xrpl.js` (v4)
-   - Wallet (connection + payments) : `xrpl-connect` (by XRPL Commons) — GemWallet (confirmed working), Xaman, Crossmark, Ledger, WalletConnect
+   - Wallet (connection + payments) : `@gemwallet/api` — GemWallet only
    - shadcn/ui pour les composants UI
    - Lucide React pour les icônes
    - SQLite via Prisma pour la base de données
