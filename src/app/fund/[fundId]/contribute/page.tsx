@@ -30,7 +30,7 @@ import { useFundDashboard } from "@/lib/hooks/useFund";
 import { ConnectWallet } from "@/components/wallet/ConnectWallet";
 import { cn } from "@/lib/utils";
 import { dropsToXrp, xrpToDrops, formatXrp } from "@/lib/utils/xrp";
-import { buildContributionTx, canAffordContribution } from "@/lib/xrpl/payment";
+import { buildContributionTx } from "@/lib/xrpl/payment";
 import { submitTransaction } from "@/lib/wallet/client";
 
 // ---------------------------------------------------------------------------
@@ -206,12 +206,14 @@ function ContributeContent({ fundId }: { fundId: string }) {
     checked: boolean;
   }>({ availableXrp: 0, checked: false });
 
-  // Check wallet balance
+  // Check wallet balance via server API
   const checkBalance = useCallback(async () => {
     if (!address) return;
     setIsChecking(true);
     try {
-      const { availableDrops } = await canAffordContribution(address, 0);
+      const res = await fetch(`/api/xrpl/balance?address=${address}`);
+      if (!res.ok) throw new Error("Balance check failed");
+      const { availableDrops } = await res.json();
       setBalanceInfo({ availableXrp: dropsToXrp(availableDrops), checked: true });
     } catch {
       // Silently fail — balance check is optional UX
@@ -283,9 +285,12 @@ function ContributeContent({ fundId }: { fundId: string }) {
 
     try {
       // 1. Check if user can afford contribution
-      const { canAfford } = await canAffordContribution(address, amountDrops);
-      if (!canAfford) {
-        throw new Error("Insufficient balance to cover the contribution and network fee");
+      const balRes = await fetch(`/api/xrpl/balance?address=${address}`);
+      if (balRes.ok) {
+        const { availableDrops } = await balRes.json();
+        if (availableDrops < amountDrops + 12) {
+          throw new Error("Insufficient balance to cover the contribution and network fee");
+        }
       }
 
       // 2. Build the unsigned transaction
