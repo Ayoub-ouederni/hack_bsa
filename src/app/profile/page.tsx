@@ -326,20 +326,20 @@ export default function ProfilePage() {
                   </AnimatePresence>
 
                   {/* Wallet address */}
-                  <div className="flex items-center gap-2">
-                    <code className="rounded-md bg-muted px-2.5 py-1 text-xs font-mono text-muted-foreground">
-                      {address
-                        ? `${address.slice(0, 8)}...${address.slice(-6)}`
-                        : ""}
-                    </code>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>Wallet</span>
                     <button
                       onClick={copyAddress}
-                      className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-0.5 text-xs font-mono transition-colors hover:bg-muted/80"
+                      title={address ?? ""}
                     >
+                      {address
+                        ? `${address.slice(0, 6)}…${address.slice(-4)}`
+                        : ""}
                       {copied ? (
-                        <Check className="h-3.5 w-3.5 text-green-500" />
+                        <Check className="h-3 w-3 text-green-500" />
                       ) : (
-                        <Copy className="h-3.5 w-3.5" />
+                        <Copy className="h-3 w-3" />
                       )}
                     </button>
                   </div>
