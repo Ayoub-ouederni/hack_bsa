@@ -2,8 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Wallet, Users, Vote, Coins } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PoolHealth } from "@/types/fund";
 
@@ -23,37 +21,58 @@ function formatXrp(drops: number): string {
   });
 }
 
-const healthConfig: Record<PoolHealth, { color: string; label: string; badgeVariant: "default" | "secondary" | "destructive" }> = {
-  healthy: { color: "text-emerald-400", label: "Healthy", badgeVariant: "default" },
-  warning: { color: "text-amber-400", label: "Warning", badgeVariant: "secondary" },
-  critical: { color: "text-red-400", label: "Critical", badgeVariant: "destructive" },
+const healthConfig: Record<
+  PoolHealth,
+  { color: string; bg: string; label: string }
+> = {
+  healthy: {
+    color: "text-emerald-600",
+    bg: "bg-emerald-50",
+    label: "Healthy",
+  },
+  warning: {
+    color: "text-[#F5A623]",
+    bg: "bg-[#FFF9E6]",
+    label: "Warning",
+  },
+  critical: {
+    color: "text-red-500",
+    bg: "bg-red-50",
+    label: "Critical",
+  },
 };
 
-interface StatItemProps {
+interface StatCardProps {
   icon: React.ReactNode;
   label: string;
   value: string;
-  accent?: string;
+  iconBg: string;
+  iconColor: string;
   delay: number;
 }
 
-function StatItem({ icon, label, value, accent, delay }: StatItemProps) {
+function StatCard({
+  icon,
+  label,
+  value,
+  iconBg,
+  iconColor,
+  delay,
+}: StatCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay, duration: 0.25 }}
-      className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-3"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.3 }}
+      className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground">
-        {icon}
+      <div className="flex items-center gap-3">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg}`}>
+          <div className={iconColor}>{icon}</div>
+        </div>
+        <span className="text-sm text-[#6B7280]">{label}</span>
       </div>
-      <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className={`text-sm font-semibold ${accent ?? "text-foreground"}`}>
-          {value}
-        </p>
-      </div>
+      <p className="mt-3 text-2xl font-bold text-[#1A1A2E]">{value}</p>
     </motion.div>
   );
 }
@@ -69,78 +88,84 @@ export function PoolStats({
   const health = healthConfig[poolHealth];
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Fund Overview</CardTitle>
-          <Badge variant={health.badgeVariant}>{health.label}</Badge>
-        </div>
-      </CardHeader>
+    <div className="space-y-4">
+      {/* Stats grid — 2x2 on mobile, 4 cols on md+ */}
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <StatCard
+          icon={<Wallet className="h-5 w-5" />}
+          label="Pool Balance"
+          value={`${formatXrp(poolBalance)} XRP`}
+          iconBg="bg-[#FFF9E6]"
+          iconColor="text-[#F5A623]"
+          delay={0}
+        />
+        <StatCard
+          icon={<Users className="h-5 w-5" />}
+          label="Members"
+          value={`${memberCount}`}
+          iconBg="bg-blue-50"
+          iconColor="text-blue-500"
+          delay={0.05}
+        />
+        <StatCard
+          icon={<Vote className="h-5 w-5" />}
+          label="Votes Needed"
+          value={
+            memberCount > 0 ? `${quorumRequired} / ${memberCount}` : "—"
+          }
+          iconBg="bg-purple-50"
+          iconColor="text-purple-500"
+          delay={0.1}
+        />
+        <StatCard
+          icon={<Coins className="h-5 w-5" />}
+          label="Min. Contribution"
+          value={`${formatXrp(minContribution)} XRP`}
+          iconBg="bg-emerald-50"
+          iconColor="text-emerald-500"
+          delay={0.15}
+        />
+      </div>
 
-      <CardContent>
-        <div className="grid grid-cols-2 gap-3">
-          <StatItem
-            icon={<Wallet className="h-4 w-4" />}
-            label="Shared Pool"
-            value={`${formatXrp(poolBalance)} XRP`}
-            accent={health.color}
-            delay={0}
-          />
-          <StatItem
-            icon={<Users className="h-4 w-4" />}
-            label="Members"
-            value={`${memberCount}`}
-            delay={0.05}
-          />
-          <StatItem
-            icon={<Vote className="h-4 w-4" />}
-            label="Votes Needed"
-            value={memberCount > 0 ? `${quorumRequired} / ${memberCount}` : "—"}
-            delay={0.1}
-          />
-          <StatItem
-            icon={<Coins className="h-4 w-4" />}
-            label="Min. Contribution"
-            value={`${formatXrp(minContribution)} XRP`}
-            delay={0.15}
-          />
-        </div>
+      {/* Health badge + active requests */}
+      <div className="flex flex-wrap items-center gap-3">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${health.bg} ${health.color}`}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-current" />
+          {health.label}
+        </span>
 
         {activeRequestCount > 0 && (
-          <motion.div
+          <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-center text-xs text-amber-400"
+            className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-600"
           >
             {activeRequestCount} active{" "}
-            {activeRequestCount === 1 ? "request" : "requests"} pending
-          </motion.div>
+            {activeRequestCount === 1 ? "request" : "requests"}
+          </motion.span>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
 export function PoolStatsSkeleton() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Fund Overview</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-3">
-              <Skeleton className="h-9 w-9 rounded-md" />
-              <div className="space-y-1.5">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-4 w-12" />
-              </div>
-            </div>
-          ))}
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-xl" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+          <Skeleton className="mt-3 h-7 w-24" />
         </div>
-      </CardContent>
-    </Card>
+      ))}
+    </div>
   );
 }

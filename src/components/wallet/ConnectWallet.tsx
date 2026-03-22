@@ -74,7 +74,7 @@ export function ConnectWallet() {
       onClick={handleConnect}
       disabled={isConnecting}
       size="sm"
-      className="gap-2"
+      className="gap-2 bg-[#F5A623] hover:bg-[#E09000] text-white rounded-xl px-6"
     >
       {isConnecting ? (
         <Loader2 className="h-4 w-4 animate-spin" />

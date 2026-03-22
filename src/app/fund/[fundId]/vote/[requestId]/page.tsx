@@ -167,8 +167,8 @@ function NotConnectedState() {
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-col items-center gap-6 py-24 text-center"
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-        <ShieldCheck className="h-8 w-8 text-primary/70" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFF9E6]">
+        <ShieldCheck className="h-8 w-8 text-[#F5A623]" />
       </div>
       <div className="space-y-2">
         <h2 className="text-xl font-semibold">Connect your wallet</h2>
@@ -229,17 +229,17 @@ function QuorumCelebration({ released }: { released: boolean }) {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 200, damping: 20 }}
-      className="flex flex-col items-center gap-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-8"
+      className="flex flex-col items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-8"
     >
       <motion.div
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 12 }}
       >
-        <PartyPopper className="h-12 w-12 text-emerald-400" />
+        <PartyPopper className="h-12 w-12 text-emerald-500" />
       </motion.div>
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-emerald-400">
+        <h3 className="text-lg font-semibold text-emerald-500">
           {released ? "Funds released!" : "Enough votes collected!"}
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -261,11 +261,11 @@ function ExpiredNotice() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/5 p-5"
+      className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-5"
     >
-      <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+      <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
       <div className="space-y-1">
-        <p className="text-sm font-medium text-destructive">
+        <p className="text-sm font-medium text-red-500">
           This request has expired
         </p>
         <p className="text-xs text-muted-foreground">
@@ -390,7 +390,7 @@ function VoteContent({
         animate={{ opacity: 1 }}
         className="flex flex-col items-center gap-4 py-24 text-center"
       >
-        <AlertCircle className="h-10 w-10 text-destructive" />
+        <AlertCircle className="h-10 w-10 text-red-500" />
         <h2 className="text-lg font-semibold">Request not found</h2>
         <p className="text-sm text-muted-foreground">
           {error || "This request may have been deleted or the link is incorrect."}
@@ -479,7 +479,7 @@ function VoteContent({
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFF9E6]">
                   <Coins className="h-5 w-5 text-primary" />
                 </div>
                 <div>
@@ -500,8 +500,8 @@ function VoteContent({
                   className={cn(
                     "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium tabular-nums",
                     countdownExpired
-                      ? "bg-destructive/10 text-destructive"
-                      : "bg-primary/10 text-primary"
+                      ? "bg-destructive/10 text-red-500"
+                      : "bg-[#FFF9E6] text-primary"
                   )}
                 >
                   <Clock className="h-3.5 w-3.5" />
@@ -644,11 +644,11 @@ function VoteContent({
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-5"
+          className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-5"
         >
           <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
           <div className="space-y-1">
-            <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+            <p className="text-sm font-medium text-amber-600 text-amber-700">
               You&apos;re not a member of this fund
             </p>
             <p className="text-xs text-muted-foreground">
@@ -663,11 +663,11 @@ function VoteContent({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-col items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-6"
+          className="flex flex-col items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-6"
         >
-          <AlertCircle className="h-8 w-8 text-amber-400" />
+          <AlertCircle className="h-8 w-8 text-amber-600" />
           <div className="text-center">
-            <p className="text-sm font-medium text-amber-400">
+            <p className="text-sm font-medium text-amber-600">
               Votes collected but release failed
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -756,7 +756,7 @@ function RetryReleaseButton({
         )}
       </Button>
       {retryError && (
-        <p className="text-xs text-destructive">{retryError}</p>
+        <p className="text-xs text-red-500">{retryError}</p>
       )}
     </div>
   );

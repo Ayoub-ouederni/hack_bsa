@@ -15,7 +15,7 @@ import {
   History,
 } from "lucide-react";
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWallet } from "@/lib/hooks/useWallet";
@@ -30,7 +30,6 @@ import {
   ContributionHistory,
   ContributionHistorySkeleton,
 } from "@/components/fund/ContributionHistory";
-import { cn } from "@/lib/utils";
 import type { RequestStatus } from "@/types/request";
 
 function formatXrp(drops: number): string {
@@ -55,31 +54,23 @@ function getTimeRemaining(expiresAt: string | null): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Skeleton for the full dashboard
+// Skeleton
 // ---------------------------------------------------------------------------
 
 function DashboardSkeleton() {
   return (
     <div className="space-y-8">
-      {/* Header skeleton */}
       <div className="space-y-2">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-4 w-72" />
       </div>
-
-      {/* Heartbeat skeleton */}
       <div className="flex justify-center">
         <Skeleton className="h-[300px] w-[300px] rounded-full" />
       </div>
-
-      {/* Grid skeleton */}
+      <PoolStatsSkeleton />
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="space-y-6 lg:col-span-3">
-          <PoolStatsSkeleton />
-          <div className="space-y-4">
-            <Skeleton className="h-6 w-36" />
-            <Skeleton className="h-48 w-full rounded-xl" />
-          </div>
+          <Skeleton className="h-48 w-full rounded-2xl" />
         </div>
         <div className="space-y-6 lg:col-span-2">
           <MemberListSkeleton />
@@ -104,15 +95,13 @@ function InviteCodeButton({ code }: { code: string }) {
   };
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="gap-1.5 font-mono text-xs"
+    <button
+      className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-mono text-[#6B7280] transition-colors hover:border-[#F5A623] hover:text-[#F5A623]"
       onClick={handleCopy}
     >
       {copied ? (
         <>
-          <Check className="h-3.5 w-3.5 text-emerald-400" />
+          <Check className="h-3.5 w-3.5 text-emerald-500" />
           Copied!
         </>
       ) : (
@@ -121,12 +110,12 @@ function InviteCodeButton({ code }: { code: string }) {
           {code}
         </>
       )}
-    </Button>
+    </button>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Not connected state
+// Not connected
 // ---------------------------------------------------------------------------
 
 function NotConnectedState() {
@@ -136,12 +125,14 @@ function NotConnectedState() {
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-col items-center gap-6 py-24 text-center"
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-        <AlertCircle className="h-8 w-8 text-primary/70" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFF9E6]">
+        <AlertCircle className="h-8 w-8 text-[#F5A623]" />
       </div>
       <div className="space-y-2">
-        <h2 className="text-xl font-semibold">Connect your wallet</h2>
-        <p className="max-w-sm text-sm text-muted-foreground">
+        <h2 className="text-xl font-semibold text-[#1A1A2E]">
+          Connect your wallet
+        </h2>
+        <p className="max-w-sm text-sm text-[#6B7280]">
           Connect your wallet to view the fund dashboard and interact with the
           community.
         </p>
@@ -152,17 +143,21 @@ function NotConnectedState() {
 }
 
 // ---------------------------------------------------------------------------
-// Main dashboard component
+// Main dashboard
 // ---------------------------------------------------------------------------
 
 function FundDashboardContent({ fundId }: { fundId: string }) {
   const router = useRouter();
   const { address } = useWallet();
-  const { data: dashboard, isLoading, error, mutate } = useFundDashboard(fundId);
+  const {
+    data: dashboard,
+    isLoading,
+    error,
+    mutate,
+  } = useFundDashboard(fundId);
   const { data: allRequests } = useRequests(fundId);
   const [showHistory, setShowHistory] = useState(false);
 
-  // Past/completed requests for history section
   const pastRequests = useMemo(
     () =>
       allRequests
@@ -185,14 +180,16 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
         animate={{ opacity: 1 }}
         className="flex flex-col items-center gap-4 py-24 text-center"
       >
-        <AlertCircle className="h-10 w-10 text-destructive" />
-        <h2 className="text-lg font-semibold">Fund not found</h2>
-        <p className="text-sm text-muted-foreground">
+        <AlertCircle className="h-10 w-10 text-red-500" />
+        <h2 className="text-lg font-semibold text-[#1A1A2E]">
+          Fund not found
+        </h2>
+        <p className="text-sm text-[#6B7280]">
           This fund may have been deleted or the link is incorrect.
         </p>
         <Link
           href="/"
-          className={cn(buttonVariants({ variant: "outline" }), "gap-2")}
+          className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-[#1A1A2E] transition-colors hover:border-[#F5A623] hover:bg-[#FFF9E6]"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to home
@@ -201,15 +198,20 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
     );
   }
 
-  const { fund, poolBalance, poolHealth, members, pendingMembers, activeRequests, recentContributions } =
-    dashboard;
+  const {
+    fund,
+    poolBalance,
+    poolHealth,
+    members,
+    pendingMembers,
+    activeRequests,
+    recentContributions,
+  } = dashboard;
 
-  // Build a lookup for member names by wallet address
   const memberNameMap = new Map(
     members.map((m) => [m.walletAddress, m.displayName])
   );
 
-  // Use allRequests (from dedicated request endpoint) for richer data, fallback to dashboard activeRequests
   const requestsToShow = allRequests
     ? allRequests.filter(
         (r) =>
@@ -219,15 +221,11 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
       )
     : activeRequests;
 
-  // Find the first active release for HeartbeatPulse
   const activeRelease = activeRequests.find(
     (r) => r.status === "approved" || r.status === "voting"
   );
 
-  // Last contribution for HeartbeatPulse
   const lastContrib = recentContributions[0];
-
-  // Pool target = minContribution * memberCount (rough baseline)
   const poolTarget = fund.minContribution * Math.max(members.length, 1);
 
   return (
@@ -242,7 +240,7 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
         <div className="space-y-1">
           <Link
             href="/"
-            className="mb-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="mb-2 inline-flex items-center gap-1.5 text-sm text-[#6B7280] transition-colors hover:text-[#1A1A2E]"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back
@@ -251,7 +249,7 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-2xl font-bold tracking-tight md:text-3xl"
+            className="text-2xl font-bold tracking-tight text-[#1A1A2E] md:text-3xl"
           >
             {fund.name}
           </motion.h1>
@@ -260,7 +258,7 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.15 }}
-              className="text-sm text-muted-foreground"
+              className="text-sm text-[#6B7280]"
             >
               {fund.description}
             </motion.p>
@@ -278,10 +276,7 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
             href={`https://testnet.xrpl.org/accounts/${fund.fundWalletAddress}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "sm" }),
-              "gap-1.5 text-xs text-muted-foreground"
-            )}
+            className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs text-[#6B7280] transition-colors hover:bg-gray-50 hover:text-[#1A1A2E]"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             View on ledger
@@ -289,7 +284,7 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
         </motion.div>
       </div>
 
-      {/* ---- HeartbeatPulse (centered) ---- */}
+      {/* ---- HeartbeatPulse ---- */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -330,42 +325,40 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
       >
         <Link
           href={`/fund/${fundId}/contribute`}
-          className={cn(buttonVariants({ size: "lg" }), "gap-2")}
+          className="inline-flex items-center gap-2 rounded-xl bg-[#F5A623] px-6 py-3 font-medium text-white transition-colors hover:bg-[#E09000]"
         >
           <HandCoins className="h-4 w-4" />
           Contribute
         </Link>
         <Link
           href={`/fund/${fundId}/request`}
-          className={cn(
-            buttonVariants({ variant: "outline", size: "lg" }),
-            "gap-2"
-          )}
+          className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3 font-medium text-[#1A1A2E] transition-colors hover:border-[#F5A623] hover:bg-[#FFF9E6]"
         >
           <Plus className="h-4 w-4" />
           Request help
         </Link>
       </motion.div>
 
+      {/* ---- Stats cards row ---- */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+      >
+        <PoolStats
+          poolBalance={poolBalance}
+          poolHealth={poolHealth}
+          memberCount={members.length}
+          quorumRequired={fund.quorumRequired}
+          minContribution={fund.minContribution}
+          activeRequestCount={activeRequests.length}
+        />
+      </motion.div>
+
       {/* ---- Main grid ---- */}
       <div className="grid gap-6 lg:grid-cols-5">
-        {/* Left column: Stats + Requests */}
+        {/* Left: Requests */}
         <div className="space-y-6 lg:col-span-3">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-          >
-            <PoolStats
-              poolBalance={poolBalance}
-              poolHealth={poolHealth}
-              memberCount={members.length}
-              quorumRequired={fund.quorumRequired}
-              minContribution={fund.minContribution}
-              activeRequestCount={activeRequests.length}
-            />
-          </motion.div>
-
           {/* Active requests */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -374,19 +367,19 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
             className="space-y-4"
           >
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold tracking-tight">
+              <h2 className="text-lg font-semibold tracking-tight text-[#1A1A2E]">
                 Active Requests
               </h2>
               {activeRequests.length > 0 && (
-                <Badge variant="secondary" className="text-xs">
+                <span className="inline-flex items-center rounded-full bg-[#FFF9E6] px-2.5 py-0.5 text-xs font-medium text-[#F5A623]">
                   {activeRequests.length} pending
-                </Badge>
+                </span>
               )}
             </div>
 
             <AnimatePresence mode="popLayout">
               {requestsToShow.length > 0 ? (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {requestsToShow.map((req) => (
                     <RequestCard
                       key={req.id}
@@ -404,14 +397,10 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
                       createdAt={req.createdAt}
                       isOwnRequest={req.requesterAddress === address}
                       onVote={(requestId) =>
-                        router.push(
-                          `/fund/${fundId}/vote/${requestId}`
-                        )
+                        router.push(`/fund/${fundId}/vote/${requestId}`)
                       }
                       onView={(requestId) =>
-                        router.push(
-                          `/fund/${fundId}/vote/${requestId}`
-                        )
+                        router.push(`/fund/${fundId}/vote/${requestId}`)
                       }
                     />
                   ))}
@@ -420,12 +409,12 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border/60 bg-card/30 px-6 py-12 text-center"
+                  className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-gray-200 bg-[#FAFAFA] px-6 py-12 text-center"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
-                    <Check className="h-6 w-6 text-emerald-400" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50">
+                    <Check className="h-6 w-6 text-emerald-500" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-[#6B7280]">
                     No active requests. Everyone is safe!
                   </p>
                 </motion.div>
@@ -443,22 +432,21 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
             >
               <button
                 onClick={() => setShowHistory((v) => !v)}
-                className="flex w-full items-center justify-between rounded-lg px-1 py-1 text-left transition-colors hover:bg-muted/40"
+                className="flex w-full items-center justify-between rounded-xl px-2 py-2 text-left transition-colors hover:bg-gray-50"
               >
                 <div className="flex items-center gap-2">
-                  <History className="h-4 w-4 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold tracking-tight">
+                  <History className="h-4 w-4 text-[#6B7280]" />
+                  <h2 className="text-lg font-semibold tracking-tight text-[#1A1A2E]">
                     Request History
                   </h2>
-                  <Badge variant="outline" className="text-xs">
+                  <span className="inline-flex items-center rounded-full border border-gray-200 px-2 py-0.5 text-xs font-medium text-[#6B7280]">
                     {pastRequests.length}
-                  </Badge>
+                  </span>
                 </div>
                 <ChevronDown
-                  className={cn(
-                    "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                    showHistory && "rotate-180"
-                  )}
+                  className={`h-4 w-4 text-[#6B7280] transition-transform duration-200 ${
+                    showHistory ? "rotate-180" : ""
+                  }`}
                 />
               </button>
 
@@ -471,7 +459,7 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                     className="overflow-hidden"
                   >
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       {pastRequests.map((req) => (
                         <RequestCard
                           key={req.id}
@@ -493,9 +481,7 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
                           createdAt={req.createdAt}
                           isOwnRequest={req.requesterAddress === address}
                           onView={(requestId) =>
-                            router.push(
-                              `/fund/${fundId}/vote/${requestId}`
-                            )
+                            router.push(`/fund/${fundId}/vote/${requestId}`)
                           }
                         />
                       ))}
@@ -507,7 +493,7 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
           )}
         </div>
 
-        {/* Right column: Members + Contributions */}
+        {/* Right: Members + Contributions */}
         <div className="space-y-6 lg:col-span-2">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -538,7 +524,7 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Page wrapper (reads params, checks wallet)
+// Page wrapper
 // ---------------------------------------------------------------------------
 
 export default function FundDashboardPage({

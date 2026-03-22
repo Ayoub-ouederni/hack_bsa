@@ -7,7 +7,7 @@ interface PageShellProps {
 
 export function PageShell({ children, className }: PageShellProps) {
   return (
-    <main className={`mx-auto w-full max-w-5xl flex-1 px-4 py-8 ${className ?? ""}`}>
+    <main className={`mx-auto w-full max-w-7xl flex-1 px-6 py-8 pb-24 md:pb-8 ${className ?? ""}`}>
       {children}
     </main>
   );

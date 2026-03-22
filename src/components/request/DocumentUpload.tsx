@@ -4,7 +4,6 @@ import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, FileText, X, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 export interface DocumentUploadProps {
   onHashGenerated: (hash: string, fileName: string) => void;
@@ -90,14 +89,16 @@ export function DocumentUpload({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4"
+            className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4"
           >
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <CheckCircle2 className="text-primary" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
+              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{fileName}</p>
-              <p className="truncate font-mono text-xs text-muted-foreground">
+              <p className="truncate text-sm font-medium text-[#1A1A2E]">
+                {fileName}
+              </p>
+              <p className="truncate font-mono text-xs text-[#6B7280]">
                 SHA-256: {hash?.slice(0, 16)}...
               </p>
             </div>
@@ -106,10 +107,10 @@ export function DocumentUpload({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
+                className="h-8 w-8 shrink-0 text-[#6B7280] hover:text-red-500 rounded-lg"
                 onClick={handleClear}
               >
-                <X />
+                <X className="h-4 w-4" />
               </Button>
             )}
           </motion.div>
@@ -127,15 +128,16 @@ export function DocumentUpload({
               }}
               onDragLeave={() => setIsDragOver(false)}
               onDrop={handleDrop}
-              onClick={() => !disabled && !isHashing && inputRef.current?.click()}
-              className={cn(
-                "group flex cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed p-8 transition-all",
+              onClick={() =>
+                !disabled && !isHashing && inputRef.current?.click()
+              }
+              className={`group flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed p-8 transition-all ${
                 isDragOver
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/40 hover:bg-accent/50",
-                disabled && "cursor-not-allowed opacity-50",
-                isHashing && "pointer-events-none"
-              )}
+                  ? "border-[#F5A623] bg-[#FFF9E6]"
+                  : "border-gray-200 hover:border-[#F5A623]/40 hover:bg-[#FFF9E6]/30"
+              } ${disabled ? "cursor-not-allowed opacity-50" : ""} ${
+                isHashing ? "pointer-events-none" : ""
+              }`}
             >
               <input
                 ref={inputRef}
@@ -152,28 +154,29 @@ export function DocumentUpload({
                   animate={{ scale: 1 }}
                   className="flex flex-col items-center gap-2"
                 >
-                  <Loader2 className="size-8 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">
-                    Generating proof...
-                  </p>
+                  <Loader2 className="h-8 w-8 animate-spin text-[#F5A623]" />
+                  <p className="text-sm text-[#6B7280]">Generating proof...</p>
                 </motion.div>
               ) : (
                 <>
                   <div
-                    className={cn(
-                      "flex size-12 items-center justify-center rounded-xl transition-colors",
+                    className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
                       isDragOver
-                        ? "bg-primary/20 text-primary"
-                        : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
-                    )}
+                        ? "bg-[#F5A623]/20 text-[#F5A623]"
+                        : "bg-[#F3F4F6] text-[#6B7280] group-hover:bg-[#FFF9E6] group-hover:text-[#F5A623]"
+                    }`}
                   >
-                    {isDragOver ? <FileText /> : <Upload />}
+                    {isDragOver ? (
+                      <FileText className="h-6 w-6" />
+                    ) : (
+                      <Upload className="h-6 w-6" />
+                    )}
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-medium">
+                    <p className="text-sm font-medium text-[#1A1A2E]">
                       Drop a file or click to upload
                     </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-[#6B7280]">
                       PDF, image, or document — max 10 MB
                     </p>
                   </div>
@@ -188,16 +191,16 @@ export function DocumentUpload({
         <motion.p
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-sm text-destructive"
+          className="text-sm text-red-500"
         >
           {error}
         </motion.p>
       )}
 
       {!hasFile && (
-        <p className="text-xs text-muted-foreground">
-          Your file never leaves your device — only its cryptographic fingerprint
-          is stored securely.
+        <p className="text-xs text-[#6B7280]">
+          Your file never leaves your device — only its cryptographic
+          fingerprint is stored securely.
         </p>
       )}
     </div>

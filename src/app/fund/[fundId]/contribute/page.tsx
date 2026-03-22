@@ -50,8 +50,8 @@ function NotConnectedState() {
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-col items-center gap-6 py-24 text-center"
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-        <AlertCircle className="h-8 w-8 text-primary/70" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFF9E6]">
+        <AlertCircle className="h-8 w-8 text-[#F5A623]" />
       </div>
       <div className="space-y-2">
         <h2 className="text-xl font-semibold">Connect your wallet</h2>
@@ -102,7 +102,7 @@ function SuccessState({
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="mx-auto max-w-lg"
     >
-      <Card className="overflow-hidden border-emerald-500/20">
+      <Card className="overflow-hidden border-emerald-200">
         {/* Gradient top bar */}
         <div className="h-1.5 bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-500" />
 
@@ -112,7 +112,7 @@ function SuccessState({
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 15 }}
-            className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/10"
+            className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50"
           >
             <CheckCircle2 className="h-10 w-10 text-emerald-500" />
           </motion.div>
@@ -236,7 +236,7 @@ function ContributeContent({ fundId }: { fundId: string }) {
         animate={{ opacity: 1 }}
         className="flex flex-col items-center gap-4 py-24 text-center"
       >
-        <AlertCircle className="h-10 w-10 text-destructive" />
+        <AlertCircle className="h-10 w-10 text-red-500" />
         <h2 className="text-lg font-semibold">Fund not found</h2>
         <p className="text-sm text-muted-foreground">
           This fund may have been deleted or the link is incorrect.
@@ -393,11 +393,11 @@ function ContributeContent({ fundId }: { fundId: string }) {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-4"
+          className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4"
         >
           <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
           <div className="space-y-1">
-            <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+            <p className="text-sm font-medium text-amber-600 text-amber-700">
               You&apos;re not a member of this fund
             </p>
             <p className="text-xs text-muted-foreground">
@@ -418,7 +418,7 @@ function ContributeContent({ fundId }: { fundId: string }) {
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50">
                   <HandCoins className="h-5 w-5 text-emerald-500" />
                 </div>
                 <div>
@@ -469,7 +469,7 @@ function ContributeContent({ fundId }: { fundId: string }) {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="text-xs text-destructive"
+                    className="text-xs text-red-500"
                   >
                     {amountError}
                   </motion.p>
@@ -522,10 +522,10 @@ function ContributeContent({ fundId }: { fundId: string }) {
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3"
+                  className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3"
                 >
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                  <p className="text-xs text-destructive">{submitError}</p>
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+                  <p className="text-xs text-red-500">{submitError}</p>
                 </motion.div>
               )}
             </AnimatePresence>

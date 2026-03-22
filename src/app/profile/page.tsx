@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 
 import { useWallet } from "@/lib/hooks/useWallet";
-import { PageShell } from "@/components/layout/PageShell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -159,14 +158,13 @@ export default function ProfilePage() {
   // Not connected state
   if (!isConnecting && !isConnected) {
     return (
-      <PageShell>
-        <div className="flex flex-col items-center justify-center gap-6 py-24">
-          <div className="rounded-full bg-muted p-6">
-            <Shield className="h-10 w-10 text-muted-foreground" />
+      <div className="flex flex-col items-center justify-center gap-6 py-24">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFF9E6]">
+            <Shield className="h-8 w-8 text-[#F5A623]" />
           </div>
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold">Connect Your Wallet</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-bold text-[#1A1A2E]">Connect Your Wallet</h1>
+            <p className="text-[#6B7280]">
               Connect your wallet to view your profile and memberships.
             </p>
           </div>
@@ -174,13 +172,11 @@ export default function ProfilePage() {
             Go Home
           </Button>
         </div>
-      </PageShell>
     );
   }
 
   return (
-    <PageShell>
-      <motion.div
+    <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -200,7 +196,7 @@ export default function ProfilePage() {
         {/* Profile Header Card */}
         <Card className="relative overflow-hidden">
           {/* Decorative gradient bar */}
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent" />
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-[#FFF9E6] via-[#FFF9E6]/50 to-transparent" />
 
           <CardContent className="relative pt-8 pb-6">
             {loading ? (
@@ -220,7 +216,7 @@ export default function ProfilePage() {
                     {profile?.avatarBase64 ? (
                       <AvatarImage src={profile.avatarBase64} alt="Profile" />
                     ) : null}
-                    <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                    <AvatarFallback className="bg-[#FFF9E6] text-primary text-2xl font-bold">
                       {(profile?.displayName?.[0] ?? address?.[0] ?? "?").toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -416,7 +412,7 @@ export default function ProfilePage() {
             ) : memberships.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center gap-4 py-12">
-                  <Shield className="h-10 w-10 text-muted-foreground/50" />
+                  <Shield className="h-10 w-10 text-gray-300" />
                   <div className="text-center">
                     <p className="font-medium">No memberships yet</p>
                     <p className="text-sm text-muted-foreground">
@@ -440,9 +436,9 @@ export default function ProfilePage() {
                   transition={{ delay: idx * 0.05 }}
                 >
                   <Link href={`/fund/${m.fundId}`}>
-                    <Card className="group transition-colors hover:bg-accent/50 cursor-pointer">
+                    <Card className="group transition-colors hover:bg-[#FFF9E6]/50 cursor-pointer">
                       <CardContent className="flex items-center gap-4 py-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-lg">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#FFF9E6] text-primary font-bold text-lg">
                           {m.fundName[0].toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -515,7 +511,7 @@ export default function ProfilePage() {
                   return (
                     <Card>
                       <CardContent className="flex flex-col items-center gap-4 py-12">
-                        <Hexagon className="h-10 w-10 text-muted-foreground/50" />
+                        <Hexagon className="h-10 w-10 text-gray-300" />
                         <div className="text-center">
                           <p className="font-medium">No membership NFTs yet</p>
                           <p className="text-sm text-muted-foreground">
@@ -539,7 +535,7 @@ export default function ProfilePage() {
                       >
                         <Card className="group relative overflow-hidden">
                           {/* Gradient background */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                          <div className="absolute inset-0 bg-gradient-to-br from-[#FFF9E6]/50 via-transparent to-[#FFF9E6]/30 opacity-0 transition-opacity group-hover:opacity-100" />
 
                           <CardHeader className="relative pb-2">
                             <div className="flex items-center justify-between">
@@ -556,7 +552,7 @@ export default function ProfilePage() {
                             {/* NFT Visual */}
                             <div className="flex items-center justify-center py-4">
                               <div className="relative">
-                                <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 shadow-inner">
+                                <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-gradient-to-br from-[#FFF9E6] to-[#FFF9E6]/50 border border-[#F5A623]/20 shadow-inner">
                                   <Hexagon className="h-10 w-10 text-primary" />
                                 </div>
                                 <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 shadow-sm">
@@ -623,6 +619,5 @@ export default function ProfilePage() {
           </TabsContent>
         </Tabs>
       </motion.div>
-    </PageShell>
   );
 }

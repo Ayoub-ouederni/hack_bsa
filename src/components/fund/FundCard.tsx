@@ -3,15 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Users, AlertCircle, ChevronRight, Shield } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Fund } from "@/types/fund";
 
 interface FundCardProps {
@@ -23,65 +15,59 @@ export function FundCard({ fund }: FundCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
+      whileHover={{ y: -4, boxShadow: "0 10px 40px rgba(0,0,0,0.08)" }}
+      transition={{ duration: 0.2 }}
     >
       <Link href={`/fund/${fund.id}`} className="block group">
-        <Card className="relative transition-all duration-200 hover:ring-primary/30 hover:shadow-lg hover:shadow-primary/5">
-          {/* Subtle gradient accent on hover */}
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-
-          <CardHeader className="relative">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Shield className="h-4.5 w-4.5" />
-                </div>
-                <div>
-                  <CardTitle className="text-base font-semibold tracking-tight">
-                    {fund.name}
-                  </CardTitle>
-                  {fund.description && (
-                    <CardDescription className="mt-0.5 line-clamp-1 text-xs">
-                      {fund.description}
-                    </CardDescription>
-                  )}
-                </div>
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFF9E6]">
+                <Shield className="h-5 w-5 text-[#F5A623]" />
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-            </div>
-          </CardHeader>
-
-          <CardContent className="relative">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Users className="h-3.5 w-3.5" />
-                <span>
-                  {fund.memberCount}{" "}
-                  {fund.memberCount === 1 ? "member" : "members"}
-                </span>
+              <div>
+                <h3 className="text-base font-semibold text-[#1A1A2E] tracking-tight">
+                  {fund.name}
+                </h3>
+                {fund.description && (
+                  <p className="mt-0.5 line-clamp-1 text-xs text-[#6B7280]">
+                    {fund.description}
+                  </p>
+                )}
               </div>
-
-              {fund.requestCount > 0 && (
-                <Badge variant="destructive" className="gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {fund.requestCount} active
-                </Badge>
-              )}
             </div>
-          </CardContent>
+            <ChevronRight className="h-4 w-4 text-[#6B7280] transition-transform group-hover:translate-x-0.5" />
+          </div>
 
-          <CardFooter className="relative">
-            <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
+          {/* Stats */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-1.5 text-sm text-[#6B7280]">
+              <Users className="h-3.5 w-3.5" />
               <span>
-                Votes needed: {fund.quorumRequired} /{" "}
-                {fund.memberCount || "..."}
-              </span>
-              <span>
-                Min: {(fund.minContribution / 1_000_000).toFixed(0)} XRP
+                {fund.memberCount}{" "}
+                {fund.memberCount === 1 ? "member" : "members"}
               </span>
             </div>
-          </CardFooter>
-        </Card>
+
+            {fund.requestCount > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-500">
+                <AlertCircle className="h-3 w-3" />
+                {fund.requestCount} active
+              </span>
+            )}
+          </div>
+
+          {/* Footer info */}
+          <div className="flex w-full items-center justify-between border-t border-gray-100 pt-3 text-xs text-[#6B7280]">
+            <span>
+              Votes needed: {fund.quorumRequired} / {fund.memberCount || "..."}
+            </span>
+            <span>
+              Min: {(fund.minContribution / 1_000_000).toFixed(0)} XRP
+            </span>
+          </div>
+        </div>
       </Link>
     </motion.div>
   );
@@ -89,25 +75,19 @@ export function FundCard({ fund }: FundCardProps) {
 
 export function FundCardSkeleton() {
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 animate-pulse rounded-lg bg-muted" />
-          <div className="space-y-1.5">
-            <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-            <div className="h-3 w-48 animate-pulse rounded bg-muted" />
-          </div>
+    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+      <div className="flex items-center gap-3 mb-4">
+        <Skeleton className="h-10 w-10 rounded-xl" />
+        <div className="space-y-1.5">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-48" />
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-      </CardContent>
-      <CardFooter>
-        <div className="flex w-full justify-between">
-          <div className="h-3 w-20 animate-pulse rounded bg-muted" />
-          <div className="h-3 w-16 animate-pulse rounded bg-muted" />
-        </div>
-      </CardFooter>
-    </Card>
+      </div>
+      <Skeleton className="h-4 w-24 mb-4" />
+      <div className="flex w-full justify-between border-t border-gray-100 pt-3">
+        <Skeleton className="h-3 w-20" />
+        <Skeleton className="h-3 w-16" />
+      </div>
+    </div>
   );
 }

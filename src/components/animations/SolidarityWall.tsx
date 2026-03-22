@@ -28,12 +28,12 @@ export function SolidarityWall({
     <div className="w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm text-zinc-400">
+        <span className="text-sm text-[#6B7280]">
           {currentVotes}/{quorumRequired} votes needed
         </span>
         {quorumReached && (
           <motion.span
-            className="text-sm font-semibold text-emerald-400"
+            className="text-sm font-semibold text-emerald-500"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
           >
@@ -55,7 +55,7 @@ export function SolidarityWall({
                 className="flex flex-col items-center gap-1"
                 initial={hasVoted ? { opacity: 0, y: 20 } : false}
                 animate={{
-                  opacity: hasVoted ? 1 : 0.2,
+                  opacity: hasVoted ? 1 : 0.25,
                   y: 0,
                 }}
                 transition={{ duration: 0.5, delay: hasVoted ? i * 0.1 : 0 }}
@@ -63,10 +63,10 @@ export function SolidarityWall({
                 <div
                   className={`rounded-full p-3 transition-colors duration-500 ${
                     quorumReached && hasVoted
-                      ? "bg-emerald-500/30 text-emerald-400 shadow-[0_0_12px_rgba(34,197,94,0.4)]"
+                      ? "bg-emerald-100 text-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
                       : hasVoted
-                        ? "bg-zinc-700 text-zinc-300"
-                        : "bg-zinc-800/50 text-zinc-700"
+                        ? "bg-[#FFF9E6] text-[#F5A623]"
+                        : "bg-gray-100 text-gray-300"
                   }`}
                 >
                   <User className="w-8 h-8" />
@@ -74,7 +74,7 @@ export function SolidarityWall({
                 {name && (
                   <span
                     className={`text-xs ${
-                      quorumReached && hasVoted ? "text-emerald-400" : "text-zinc-500"
+                      quorumReached && hasVoted ? "text-emerald-500" : "text-[#6B7280]"
                     }`}
                   >
                     {name}

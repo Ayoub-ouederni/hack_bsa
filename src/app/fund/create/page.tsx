@@ -92,7 +92,7 @@ export default function CreateFundPage() {
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20"
+          className="flex h-20 w-20 items-center justify-center rounded-full bg-[#FFF9E6] ring-1 ring-[#F5A623]/20"
         >
           <Shield className="h-10 w-10 text-primary" />
         </motion.div>
@@ -163,7 +163,7 @@ export default function CreateFundPage() {
                   damping: 12,
                   delay: 0.15,
                 }}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/15 ring-1 ring-green-500/30"
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 ring-1 ring-emerald-200"
               >
                 <Check className="h-8 w-8 text-green-500" />
               </motion.div>
@@ -186,7 +186,7 @@ export default function CreateFundPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Card className="border-primary/20 bg-primary/5">
+              <Card className="border-[#F5A623]/20 bg-[#FFF9E6]">
                 <CardContent className="flex flex-col items-center gap-4 py-8">
                   <p className="text-sm font-medium text-muted-foreground">
                     Invite code
@@ -364,7 +364,7 @@ export default function CreateFundPage() {
             </Card>
 
             {/* Hardcoded rules info */}
-            <Card className="border-primary/10 bg-primary/5">
+            <Card className="border-[#F5A623]/10 bg-[#FFF9E6]/50">
               <CardContent className="space-y-3 py-5">
                 <div className="flex items-center gap-2 pb-1">
                   <Shield className="h-4 w-4 text-primary" />
@@ -402,7 +402,7 @@ export default function CreateFundPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+                  className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-500"
                 >
                   {error}
                 </motion.div>

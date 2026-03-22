@@ -39,7 +39,6 @@ export function RequestProgressTracker({
         {steps.map((step, i) => {
           const isPast = i < activeIndex;
           const isActive = i === activeIndex;
-          const isFuture = i > activeIndex;
 
           return (
             <div key={step} className="flex items-center flex-1 last:flex-none">
@@ -51,9 +50,9 @@ export function RequestProgressTracker({
                       ? "bg-emerald-500 border-emerald-500 text-white"
                       : isActive
                         ? step === "expired"
-                          ? "border-red-500 text-red-400 bg-red-500/20"
-                          : "border-emerald-400 text-emerald-400 bg-emerald-500/20"
-                        : "border-zinc-700 text-zinc-600 bg-zinc-800"
+                          ? "border-red-400 text-red-500 bg-red-50"
+                          : "border-[#F5A623] text-[#F5A623] bg-[#FFF9E6]"
+                        : "border-gray-200 text-gray-400 bg-gray-50"
                   }`}
                   animate={isActive && step !== "expired" ? { scale: [1, 1.1, 1] } : {}}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -67,9 +66,9 @@ export function RequestProgressTracker({
                       ? "text-emerald-500"
                       : isActive
                         ? step === "expired"
-                          ? "text-red-400"
-                          : "text-emerald-400"
-                        : "text-zinc-600"
+                          ? "text-red-500"
+                          : "text-[#F5A623]"
+                        : "text-gray-400"
                   }`}
                 >
                   {step}
@@ -79,12 +78,12 @@ export function RequestProgressTracker({
                 {step === "voting" && isActive && (
                   <div className="absolute top-full mt-3 text-center">
                     {currentVotes !== undefined && quorumRequired !== undefined && (
-                      <span className="text-[10px] text-zinc-400 block">
+                      <span className="text-[10px] text-[#6B7280] block">
                         {currentVotes}/{quorumRequired} votes
                       </span>
                     )}
                     {timeRemaining && (
-                      <span className="text-[10px] text-zinc-500 block">{timeRemaining}</span>
+                      <span className="text-[10px] text-[#6B7280] block">{timeRemaining}</span>
                     )}
                   </div>
                 )}
@@ -93,7 +92,7 @@ export function RequestProgressTracker({
               {/* Connector line */}
               {i < steps.length - 1 && (
                 <div className="flex-1 h-0.5 mx-2 relative">
-                  <div className="absolute inset-0 bg-zinc-800" />
+                  <div className="absolute inset-0 bg-gray-200" />
                   {isPast && (
                     <motion.div
                       className="absolute inset-0 bg-emerald-500"

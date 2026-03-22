@@ -10,7 +10,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 export interface VoteButtonsProps {
   onSupport: () => Promise<void>;
@@ -56,18 +55,18 @@ export function VoteButtons({
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="flex flex-col items-center gap-3 rounded-xl bg-primary/5 p-6 ring-1 ring-primary/20"
+        className="flex flex-col items-center gap-3 rounded-2xl bg-emerald-50 p-6 ring-1 ring-emerald-200"
       >
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          <CheckCircle2 className="size-10 text-primary" />
+          <CheckCircle2 className="h-10 w-10 text-emerald-500" />
         </motion.div>
         <div className="text-center">
-          <p className="font-medium text-primary">You showed solidarity</p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="font-medium text-emerald-700">You showed solidarity</p>
+          <p className="mt-1 text-sm text-[#6B7280]">
             Your vote has been recorded.
           </p>
         </div>
@@ -78,8 +77,8 @@ export function VoteButtons({
   // Own request state
   if (isOwnRequest) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-xl bg-muted/50 p-6">
-        <p className="text-sm text-muted-foreground">
+      <div className="flex flex-col items-center gap-2 rounded-2xl bg-[#FAFAFA] p-6">
+        <p className="text-sm text-[#6B7280]">
           This is your request — you cannot vote on it.
         </p>
       </div>
@@ -92,10 +91,9 @@ export function VoteButtons({
       <motion.div whileTap={{ scale: 0.98 }}>
         <Button
           size="lg"
-          className={cn(
-            "relative w-full gap-2 overflow-hidden py-6 text-base",
-            isVoting && "pointer-events-none"
-          )}
+          className={`relative w-full gap-2 overflow-hidden py-6 text-base rounded-xl bg-[#F5A623] hover:bg-[#E09000] text-white ${
+            isVoting ? "pointer-events-none" : ""
+          }`}
           onClick={handleSupport}
           disabled={disabled || isVoting}
         >
@@ -108,7 +106,7 @@ export function VoteButtons({
                 exit={{ opacity: 0 }}
                 className="flex items-center gap-2"
               >
-                <Loader2 className="animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
                 Recording your vote...
               </motion.span>
             ) : (
@@ -119,9 +117,9 @@ export function VoteButtons({
                 exit={{ opacity: 0 }}
                 className="flex items-center gap-2"
               >
-                <Heart />
+                <Heart className="h-5 w-5" />
                 I support this request
-                <ArrowRight />
+                <ArrowRight className="h-5 w-5" />
               </motion.span>
             )}
           </AnimatePresence>
@@ -132,7 +130,7 @@ export function VoteButtons({
       {onPass && (
         <Button
           variant="ghost"
-          className="text-muted-foreground"
+          className="text-[#6B7280] hover:text-[#1A1A2E] hover:bg-gray-50 rounded-xl"
           onClick={onPass}
           disabled={disabled || isVoting}
         >
@@ -145,9 +143,9 @@ export function VoteButtons({
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
+          className="flex items-center gap-2 rounded-xl bg-red-50 p-3 text-sm text-red-500"
         >
-          <AlertCircle className="shrink-0" />
+          <AlertCircle className="h-4 w-4 shrink-0" />
           <span>{error}</span>
         </motion.div>
       )}

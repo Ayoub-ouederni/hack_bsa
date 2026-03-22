@@ -83,7 +83,7 @@ function StepIndicator({ currentStep }: { currentStep: Step }) {
                 isDone
                   ? "bg-primary text-primary-foreground"
                   : isActive
-                    ? "bg-primary/20 text-primary ring-2 ring-primary/40"
+                    ? "bg-[#FFF9E6] text-primary ring-2 ring-[#F5A623]/40"
                     : "bg-muted text-muted-foreground"
               }`}
             >
@@ -244,7 +244,7 @@ export default function OnboardingPage() {
             >
               <Card>
                 <CardHeader className="text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFF9E6]">
                     <Ticket className="h-6 w-6 text-primary" />
                   </div>
                   <CardTitle>Join a fund</CardTitle>
@@ -274,7 +274,7 @@ export default function OnboardingPage() {
                       <motion.p
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-sm text-destructive"
+                        className="text-sm text-red-500"
                       >
                         {error}
                       </motion.p>
@@ -309,7 +309,7 @@ export default function OnboardingPage() {
             >
               <Card>
                 <CardHeader className="text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFF9E6]">
                     <User className="h-6 w-6 text-primary" />
                   </div>
                   <CardTitle>Almost there</CardTitle>
@@ -322,9 +322,9 @@ export default function OnboardingPage() {
                 </CardHeader>
                 <CardContent className="space-y-5">
                   {/* Fund preview */}
-                  <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
+                  <div className="rounded-lg border border-gray-200 bg-[#FAFAFA] p-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFF9E6]">
                         <Shield className="h-4.5 w-4.5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -368,7 +368,7 @@ export default function OnboardingPage() {
                       <motion.p
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-sm text-destructive"
+                        className="text-sm text-red-500"
                       >
                         {error}
                       </motion.p>
@@ -410,7 +410,7 @@ export default function OnboardingPage() {
             >
               <Card>
                 <CardHeader className="text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFF9E6]">
                     <Wallet className="h-6 w-6 text-primary" />
                   </div>
                   <CardTitle>Connect your wallet</CardTitle>
@@ -508,7 +508,7 @@ export default function OnboardingPage() {
                       damping: 12,
                       delay: 0.1,
                     }}
-                    className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/15"
+                    className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-50"
                   >
                     <Clock className="h-8 w-8 text-amber-500" />
                   </motion.div>
