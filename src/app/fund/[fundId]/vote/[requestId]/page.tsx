@@ -337,6 +337,9 @@ function VoteContent({
     (m) => m.walletAddress === address
   );
 
+  // Check if signer keypair exists locally (needed to actually vote)
+  const hasSignerKey = Boolean(getSignerAddress(fundId));
+
   // Handle vote
   const handleVote = useCallback(async () => {
     if (!request?.unsignedTx || !address) {
@@ -613,7 +616,7 @@ function VoteContent({
       </AnimatePresence>
 
       {/* Vote section */}
-      {isVotingOpen && isMember && (
+      {isVotingOpen && isMember && hasSignerKey && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -636,6 +639,25 @@ function VoteContent({
               />
             </CardContent>
           </Card>
+        </motion.div>
+      )}
+
+      {/* Member but missing local signer key */}
+      {isMember && !hasSignerKey && request.status === "voting" && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-5"
+        >
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-amber-700">
+              Signer key not found on this device
+            </p>
+            <p className="text-xs text-muted-foreground">
+              You are a member of this fund, but your signing key is missing from this browser. Try rejoining the fund or use the browser where you originally joined.
+            </p>
+          </div>
         </motion.div>
       )}
 
