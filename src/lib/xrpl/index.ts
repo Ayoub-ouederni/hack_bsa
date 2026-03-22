@@ -65,6 +65,7 @@ export {
   buildMemo,
   canAffordContribution,
   calculateMultiSignFee,
+  calculateEscrowFinishFee,
   BASE_FEE_DROPS,
   toHex,
   fromHex,

@@ -75,6 +75,20 @@ export const BASE_FEE_DROPS = 12;
 export function calculateMultiSignFee(signerCount: number): number {
   return BASE_FEE_DROPS * (1 + signerCount);
 }
+
+/**
+ * Calculate the fee for an EscrowFinish transaction with a fulfillment.
+ * XRPL requires: reference_fee × (33 + ceil(fulfillmentSizeBytes / 16))
+ * For multi-sign, multiply by (1 + signerCount).
+ */
+export function calculateEscrowFinishFee(
+  fulfillmentHex: string,
+  signerCount: number
+): number {
+  const fulfillmentSizeBytes = fulfillmentHex.length / 2;
+  const baseCostMultiplier = 33 + Math.ceil(fulfillmentSizeBytes / 16);
+  return BASE_FEE_DROPS * baseCostMultiplier * (1 + signerCount);
+}
 const LEDGER_OFFSET_STANDARD = 20;
 const LEDGER_OFFSET_MULTISIGN = 75;
 

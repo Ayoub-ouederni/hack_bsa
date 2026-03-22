@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import {
-  combineSignatures,
-  submitMultiSigned,
-} from "@/lib/xrpl";
+import { getClient } from "@/lib/xrpl";
+import type { EscrowFinish } from "xrpl";
+import { Wallet } from "xrpl";
 
 export async function POST(
   _request: NextRequest,
@@ -63,10 +62,44 @@ export async function POST(
       );
     }
 
-    // 5. Re-collect stored vote blobs and retry
-    const signedBlobs = fundRequest.votes.map((v) => v.signature);
-    const combinedBlob = combineSignatures(signedBlobs);
-    const result = await submitMultiSigned(combinedBlob);
+    // 5. Finish the escrow directly using the fund wallet seed
+    //    (quorum was already validated by votes — old multi-signed blobs have expired LastLedgerSequence)
+    if (
+      fundRequest.escrowSequence === null ||
+      !fundRequest.escrowCondition ||
+      !fundRequest.escrowFulfillment
+    ) {
+      return NextResponse.json(
+        { error: "Missing escrow data on this request" },
+        { status: 400 }
+      );
+    }
+
+    const fund = fundRequest.fund;
+    const wallet = Wallet.fromSeed(fund.fundWalletSeed);
+    const client = await getClient();
+    const currentLedger = await client.getLedgerIndex();
+
+    const tx: EscrowFinish = {
+      TransactionType: "EscrowFinish",
+      Account: wallet.address,
+      Owner: fund.fundWalletAddress,
+      OfferSequence: fundRequest.escrowSequence,
+      Condition: fundRequest.escrowCondition,
+      Fulfillment: fundRequest.escrowFulfillment,
+      LastLedgerSequence: currentLedger + 75,
+    };
+
+    const prepared = await client.autofill(tx);
+    const signed = wallet.sign(prepared);
+    const result = await client.submitAndWait(signed.tx_blob);
+
+    const meta = result.result.meta as { TransactionResult?: string } | undefined;
+    const resultCode = meta?.TransactionResult ?? "unknown";
+
+    if (resultCode !== "tesSUCCESS") {
+      throw new Error(`EscrowFinish failed: ${resultCode}`);
+    }
 
     // 6. Update status to released
     await prisma.request.update({
@@ -76,17 +109,16 @@ export async function POST(
 
     return NextResponse.json({
       released: true,
-      txHash: result.txHash,
-      resultCode: result.resultCode,
+      txHash: result.result.hash,
+      resultCode,
     });
   } catch (error) {
     console.error(
       "POST /api/fund/[fundId]/request/[requestId]/retry-release error:",
       error
     );
-    return NextResponse.json(
-      { error: "Failed to retry release" },
-      { status: 500 }
-    );
+    const message =
+      error instanceof Error ? error.message : "Failed to retry release";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

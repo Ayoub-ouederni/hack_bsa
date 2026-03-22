@@ -3,7 +3,7 @@ import { isValidClassicAddress, Wallet } from "xrpl";
 import { getClient } from "./client";
 import { getAccountSequence, getAvailableBalance, getLedgerReserves } from "./account";
 import { isValidConditionHex, isValidFulfillmentHex } from "./conditions";
-import { calculateMultiSignFee, BASE_FEE_DROPS } from "./payment";
+import { calculateEscrowFinishFee, BASE_FEE_DROPS } from "./payment";
 
 const RIPPLE_EPOCH_OFFSET = 946684800;
 
@@ -215,7 +215,7 @@ export async function buildEscrowFinishTx(
   const currentLedger = await client.getLedgerIndex();
   const sequence = await getAccountSequence(params.ownerAddress);
   const signerCount = params.signerCount ?? 1;
-  const fee = String(calculateMultiSignFee(signerCount));
+  const fee = String(calculateEscrowFinishFee(params.fulfillmentHex, signerCount));
 
   const tx: EscrowFinish = {
     TransactionType: "EscrowFinish",
