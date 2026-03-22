@@ -35,9 +35,6 @@ export async function GET(
           orderBy: { joinedAt: "asc" },
         },
         requests: {
-          where: {
-            status: { in: ["submitted", "voting", "approved"] },
-          },
           include: { votes: true },
           orderBy: { createdAt: "desc" },
         },
@@ -51,14 +48,23 @@ export async function GET(
       );
     }
 
-    // Pool balance = sum of all recorded contributions (ignores faucet activation funds)
-    const poolBalance = fund.members.reduce(
+    // Pool balance = total contributions minus released amounts
+    const totalContributed = fund.members.reduce(
       (sum, m) => sum + m.totalContributed,
       0
     );
+    const totalReleased = fund.requests
+      .filter((r) => r.status === "released")
+      .reduce((sum, r) => sum + r.amount, 0);
+    const poolBalance = Math.max(0, totalContributed - totalReleased);
 
     const activeMembers = fund.members.filter((m) => m.status === "active");
     const pendingMembers = fund.members.filter((m) => m.status === "pending");
+
+    // Filter active requests for the response
+    const activeRequests = fund.requests.filter((r) =>
+      ["submitted", "voting", "approved"].includes(r.status)
+    );
 
     const poolHealth = computePoolHealth(poolBalance, activeMembers.length);
 
@@ -116,7 +122,7 @@ export async function GET(
         status: m.status,
         joinedAt: m.joinedAt.toISOString(),
       })),
-      activeRequests: fund.requests.map((r) => ({
+      activeRequests: activeRequests.map((r) => ({
         id: r.id,
         fundId: r.fundId,
         requesterAddress: r.requesterAddress,

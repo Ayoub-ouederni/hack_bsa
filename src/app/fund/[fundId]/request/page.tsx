@@ -405,6 +405,7 @@ function RequestContent({ fundId }: { fundId: string }) {
           requestCapMultiplier={fund.requestCapMultiplier}
           totalContributed={member?.totalContributed}
           onSubmit={handleSubmit}
+          onBack={() => router.push(`/fund/${fundId}`)}
           disabled={!isMember || !!hasActiveRequest || member?.totalContributed === 0}
         />
       </motion.div>

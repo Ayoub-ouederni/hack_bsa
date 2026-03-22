@@ -39,6 +39,7 @@ export interface RequestFormProps {
   requestCapMultiplier?: number;
   totalContributed?: number;
   onSubmit: (data: RequestFormData) => Promise<void>;
+  onBack?: () => void;
   disabled?: boolean;
 }
 
@@ -61,6 +62,7 @@ export function RequestForm({
   requestCapMultiplier,
   totalContributed,
   onSubmit,
+  onBack,
   disabled = false,
 }: RequestFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -104,6 +106,8 @@ export function RequestForm({
     if (currentStep > 0) {
       setDirection(-1);
       setCurrentStep((s) => s - 1);
+    } else if (onBack) {
+      onBack();
     }
   };
 
@@ -338,7 +342,7 @@ export function RequestForm({
             type="button"
             variant="ghost"
             onClick={goBack}
-            disabled={currentStep === 0 || isSubmitting}
+            disabled={(currentStep === 0 && !onBack) || isSubmitting}
           >
             <ArrowLeft data-icon="inline-start" />
             Back
