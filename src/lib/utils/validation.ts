@@ -10,11 +10,18 @@ export const createFundSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
   organizerAddress: xrplAddress,
-  quorumRequired: z.number().int().min(1).max(32),
   minContribution: z.number().int().min(1),
-  requestCapMultiplier: z.number().min(0.1).max(10).default(2.0),
-  maxPoolPercent: z.number().min(0.01).max(1).default(0.2),
 });
+
+// Hardcoded governance rules — not configurable by fund creator
+export const FUND_RULES = {
+  /** Quorum = 50% of members (rounded up) */
+  getQuorumRequired: (memberCount: number) => Math.ceil(memberCount / 2),
+  /** Max a member can request = 10x their total contributions */
+  requestCapMultiplier: 10,
+  /** Max 20% of the pool per single request */
+  maxPoolPercent: 0.2,
+} as const;
 
 export const joinFundSchema = z.object({
   inviteCode: z.string().min(1).max(20),
