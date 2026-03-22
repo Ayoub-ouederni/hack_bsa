@@ -5,6 +5,7 @@ import {
   createTestnetWallet,
   getWalletInfo,
   setupSignerList,
+  mintMembershipNFT,
 } from "@/lib/xrpl";
 
 function generateInviteCode(): string {
@@ -78,6 +79,23 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // 5. Mint membership NFT for organizer
+    try {
+      const nftResult = await mintMembershipNFT({
+        issuerSeed: walletInfo.seed,
+        recipientAddress: input.organizerAddress,
+        fundId: fund.id,
+      });
+
+      // Update the organizer member with NFT token ID
+      await prisma.member.updateMany({
+        where: { fundId: fund.id, walletAddress: input.organizerAddress },
+        data: { nftTokenId: nftResult.nftokenId },
+      });
+    } catch (nftError) {
+      console.error("Failed to mint organizer NFT (fund still created):", nftError);
+    }
 
     return NextResponse.json(
       {
