@@ -160,6 +160,21 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
   const { address } = useWallet();
   const { data: dashboard, isLoading, error, mutate } = useFundDashboard(fundId);
   const { data: allRequests } = useRequests(fundId);
+  const [showHistory, setShowHistory] = useState(false);
+
+  // Past/completed requests for history section
+  const pastRequests = useMemo(
+    () =>
+      allRequests
+        ? allRequests.filter(
+            (r) =>
+              r.status === "released" ||
+              r.status === "expired" ||
+              r.status === "cancelled"
+          )
+        : [],
+    [allRequests]
+  );
 
   if (isLoading) return <DashboardSkeleton />;
 
@@ -203,22 +218,6 @@ function FundDashboardContent({ fundId }: { fundId: string }) {
           r.status === "approved"
       )
     : activeRequests;
-
-  // Past/completed requests for history section
-  const pastRequests = useMemo(
-    () =>
-      allRequests
-        ? allRequests.filter(
-            (r) =>
-              r.status === "released" ||
-              r.status === "expired" ||
-              r.status === "cancelled"
-          )
-        : [],
-    [allRequests]
-  );
-
-  const [showHistory, setShowHistory] = useState(false);
 
   // Find the first active release for HeartbeatPulse
   const activeRelease = activeRequests.find(
