@@ -6,6 +6,12 @@ import {
   submitMultiSigned,
   getSignerList,
 } from "@/lib/xrpl";
+import { generateVoteProof } from "@/lib/zk/prover";
+import { verifyVoteProof } from "@/lib/zk/verifier";
+import { toHex } from "@/lib/xrpl/payment";
+import { getClient } from "@/lib/xrpl";
+import { Wallet } from "xrpl";
+import type { EscrowFinish } from "xrpl";
 
 export async function POST(
   request: NextRequest,
@@ -123,64 +129,204 @@ export async function POST(
     const quorumRequired = fundRequest.fund.quorumRequired;
 
     if (totalVotes >= quorumRequired) {
-      // Quorum reached — attempt auto-release
-      try {
-        // Collect all signed blobs (including the one just cast)
-        const allVotes = await prisma.vote.findMany({
-          where: { requestId },
-        });
+      // Count active members to decide: multi-sign (≤32) or ZK proof (>32)
+      const activeMembers = fundRequest.fund.members.filter(
+        (m) => m.status === "active"
+      );
+      const useZkPath = activeMembers.length > 32;
 
-        const signedBlobs = allVotes.map((v) => v.signature);
+      if (useZkPath) {
+        // ─── ZK PROOF PATH (>32 members) ───
+        try {
+          // Build votes array: 1 = voted, 0 = did not vote
+          const allDbVotes = await prisma.vote.findMany({
+            where: { requestId },
+          });
+          const voterAddresses = new Set(allDbVotes.map((v) => v.voterAddress));
+          const votesArray = activeMembers.map((m) =>
+            voterAddresses.has(m.walletAddress) ? 1 : 0
+          );
 
-        // Combine signatures and submit
-        const combinedBlob = combineSignatures(signedBlobs);
-        const result = await submitMultiSigned(combinedBlob);
+          // Generate ZK proof
+          const zkProof = await generateVoteProof({
+            votes: votesArray,
+            quorum: quorumRequired,
+            voterCount: activeMembers.length,
+          });
 
-        // Update request status to released
-        await prisma.request.update({
-          where: { id: requestId },
-          data: { status: "released" },
-        });
+          // Verify the proof
+          const verification = await verifyVoteProof(
+            zkProof.proof,
+            zkProof.publicSignals
+          );
 
-        return NextResponse.json(
-          {
-            vote: {
-              id: vote.id,
-              voterAddress: vote.voterAddress,
-              createdAt: vote.createdAt.toISOString(),
+          if (!verification.valid) {
+            throw new Error("ZK proof verification failed");
+          }
+
+          // Release escrow using fund wallet seed
+          if (
+            fundRequest.escrowSequence === null ||
+            !fundRequest.escrowCondition ||
+            !fundRequest.escrowFulfillment
+          ) {
+            throw new Error("Missing escrow data on this request");
+          }
+
+          const fund = fundRequest.fund;
+          const wallet = Wallet.fromSeed(fund.fundWalletSeed);
+          const client = await getClient();
+          const currentLedger = await client.getLedgerIndex();
+
+          const tx: EscrowFinish = {
+            TransactionType: "EscrowFinish",
+            Account: wallet.address,
+            Owner: fund.fundWalletAddress,
+            OfferSequence: fundRequest.escrowSequence,
+            Condition: fundRequest.escrowCondition,
+            Fulfillment: fundRequest.escrowFulfillment,
+            LastLedgerSequence: currentLedger + 75,
+            Memos: [
+              {
+                Memo: {
+                  MemoType: toHex("pulse/zk-proof"),
+                  MemoData: toHex(
+                    JSON.stringify({
+                      proofHash: zkProof.proofHash,
+                      yesVotes: zkProof.yesVotes,
+                      quorum: zkProof.quorum,
+                      voterCount: zkProof.voterCount,
+                      generatedAt: zkProof.generatedAt,
+                    })
+                  ),
+                },
+              },
+            ],
+          };
+
+          const prepared = await client.autofill(tx);
+          const signed = wallet.sign(prepared);
+          const result = await client.submitAndWait(signed.tx_blob);
+
+          const meta = result.result.meta as
+            | { TransactionResult?: string }
+            | undefined;
+          const resultCode = meta?.TransactionResult ?? "unknown";
+
+          if (resultCode !== "tesSUCCESS") {
+            throw new Error(`EscrowFinish failed: ${resultCode}`);
+          }
+
+          await prisma.request.update({
+            where: { id: requestId },
+            data: { status: "released" },
+          });
+
+          return NextResponse.json(
+            {
+              vote: {
+                id: vote.id,
+                voterAddress: vote.voterAddress,
+                createdAt: vote.createdAt.toISOString(),
+              },
+              quorumReached: true,
+              released: true,
+              releaseTxHash: result.result.hash,
+              zkProof: {
+                proofHash: zkProof.proofHash,
+                yesVotes: zkProof.yesVotes,
+                quorumMet: zkProof.quorumMet,
+                quorum: zkProof.quorum,
+                voterCount: zkProof.voterCount,
+                generatedAt: zkProof.generatedAt,
+              },
+              totalVotes,
+              quorumRequired,
             },
-            quorumReached: true,
-            released: true,
-            releaseTxHash: result.txHash,
-            totalVotes,
-            quorumRequired,
-          },
-          { status: 201 }
-        );
-      } catch (releaseError) {
-        console.error("Auto-release failed after quorum:", releaseError);
+            { status: 201 }
+          );
+        } catch (zkError) {
+          console.error("ZK proof release failed after quorum:", zkError);
 
-        // Mark as approved (quorum reached but release failed)
-        await prisma.request.update({
-          where: { id: requestId },
-          data: { status: "approved" },
-        });
+          await prisma.request.update({
+            where: { id: requestId },
+            data: { status: "approved" },
+          });
 
-        return NextResponse.json(
-          {
-            vote: {
-              id: vote.id,
-              voterAddress: vote.voterAddress,
-              createdAt: vote.createdAt.toISOString(),
+          return NextResponse.json(
+            {
+              vote: {
+                id: vote.id,
+                voterAddress: vote.voterAddress,
+                createdAt: vote.createdAt.toISOString(),
+              },
+              quorumReached: true,
+              released: false,
+              releaseError: "ZK proof release failed. Use retry-release to try again.",
+              totalVotes,
+              quorumRequired,
             },
-            quorumReached: true,
-            released: false,
-            releaseError: "Release failed. Use retry-release to try again.",
-            totalVotes,
-            quorumRequired,
-          },
-          { status: 201 }
-        );
+            { status: 201 }
+          );
+        }
+      } else {
+        // ─── MULTI-SIGN PATH (≤32 members) ───
+        try {
+          const allVotes = await prisma.vote.findMany({
+            where: { requestId },
+          });
+
+          const signedBlobs = allVotes.map((v) => v.signature);
+
+          // Combine signatures and submit
+          const combinedBlob = combineSignatures(signedBlobs);
+          const result = await submitMultiSigned(combinedBlob);
+
+          // Update request status to released
+          await prisma.request.update({
+            where: { id: requestId },
+            data: { status: "released" },
+          });
+
+          return NextResponse.json(
+            {
+              vote: {
+                id: vote.id,
+                voterAddress: vote.voterAddress,
+                createdAt: vote.createdAt.toISOString(),
+              },
+              quorumReached: true,
+              released: true,
+              releaseTxHash: result.txHash,
+              totalVotes,
+              quorumRequired,
+            },
+            { status: 201 }
+          );
+        } catch (releaseError) {
+          console.error("Auto-release failed after quorum:", releaseError);
+
+          await prisma.request.update({
+            where: { id: requestId },
+            data: { status: "approved" },
+          });
+
+          return NextResponse.json(
+            {
+              vote: {
+                id: vote.id,
+                voterAddress: vote.voterAddress,
+                createdAt: vote.createdAt.toISOString(),
+              },
+              quorumReached: true,
+              released: false,
+              releaseError: "Release failed. Use retry-release to try again.",
+              totalVotes,
+              quorumRequired,
+            },
+            { status: 201 }
+          );
+        }
       }
     }
 

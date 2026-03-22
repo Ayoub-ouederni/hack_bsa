@@ -32,6 +32,7 @@ import { useWallet } from "@/lib/hooks/useWallet";
 import { useFundDashboard } from "@/lib/hooks/useFund";
 import { ConnectWallet } from "@/components/wallet/ConnectWallet";
 import { VoteButtons } from "@/components/vote/VoteButtons";
+import { ZkProofBadge } from "@/components/vote/ZkProofBadge";
 import { SolidarityWall } from "@/components/animations/SolidarityWall";
 import { RequestProgressTracker } from "@/components/animations/RequestProgressTracker";
 import { multiSignTransaction, getSignerAddress } from "@/lib/wallet/signer";
@@ -324,6 +325,46 @@ function VoteContent({
   const isExpired = request?.status === "expired" || countdownExpired;
   const isApproved = request?.status === "approved";
 
+  // ZK proof state
+  const [zkProofData, setZkProofData] = useState<{
+    proofHash: string;
+    yesVotes: number;
+    quorum: number;
+    voterCount: number;
+    generatedAt: string;
+  } | null>(null);
+  const [zkLoading, setZkLoading] = useState(false);
+  const [zkError, setZkError] = useState<string | null>(null);
+
+  // Trigger ZK proof generation when quorum is reached and status is voting/approved
+  useEffect(() => {
+    if (!request || zkProofData || zkLoading) return;
+    if (
+      (request.status === "voting" || request.status === "approved") &&
+      request.voteCount >= request.quorumRequired
+    ) {
+      setZkLoading(true);
+      setZkError(null);
+      fetch("/api/zk/prove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fundId, requestId }),
+      })
+        .then(async (res) => {
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || "ZK proof failed");
+          if (json.zkProof) {
+            setZkProofData(json.zkProof);
+          }
+          refetch();
+        })
+        .catch((err) => {
+          setZkError(err instanceof Error ? err.message : "ZK proof failed");
+        })
+        .finally(() => setZkLoading(false));
+    }
+  }, [request, fundId, requestId, zkProofData, zkLoading, refetch]);
+
   // Voter names for SolidarityWall
   const voterNames = useMemo(() => {
     if (!request) return [];
@@ -609,6 +650,43 @@ function VoteContent({
           <QuorumCelebration released={isReleased} />
         )}
       </AnimatePresence>
+
+      {/* ZK Proof Badge */}
+      {zkProofData && (
+        <ZkProofBadge
+          zkProof={zkProofData}
+          fundWalletAddress={dashboard?.fund.fundWalletAddress}
+        />
+      )}
+
+      {/* ZK Proof loading */}
+      {zkLoading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4"
+        >
+          <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+          <span className="text-sm text-emerald-700">
+            Generating ZK proof...
+          </span>
+        </motion.div>
+      )}
+
+      {/* ZK Proof error */}
+      {zkError && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4"
+        >
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-red-700">ZK proof failed</p>
+            <p className="text-xs text-muted-foreground">{zkError}</p>
+          </div>
+        </motion.div>
+      )}
 
       {/* Expired notice */}
       <AnimatePresence>

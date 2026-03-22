@@ -43,3 +43,7 @@ next-env.d.ts
 src/generated/
 *.db
 *.db-journal
+
+# ZK circuit artifacts (regenerated via trusted setup)
+circuits/*.ptau
+circuits/vote_verifier_0000.zkey
