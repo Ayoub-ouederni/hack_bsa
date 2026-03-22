@@ -72,7 +72,11 @@ export async function connectWallet(
   if (walletType) {
     const walletId = resolveWalletId(manager, walletType);
     try {
-      const account: WalletAccount = await manager.connect(walletId);
+      const connectPromise = manager.connect(walletId);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Connection timed out. Make sure the wallet extension is installed and unlocked.")), 15000)
+      );
+      const account: WalletAccount = await Promise.race([connectPromise, timeoutPromise]);
       return {
         address: account.address,
         walletType,
@@ -83,7 +87,8 @@ export async function connectWallet(
       if (
         message.toLowerCase().includes("not currently available") ||
         message.toLowerCase().includes("not installed") ||
-        message.toLowerCase().includes("not found")
+        message.toLowerCase().includes("not found") ||
+        message.toLowerCase().includes("timed out")
       ) {
         throw new WalletNotAvailableError(walletType);
       }
