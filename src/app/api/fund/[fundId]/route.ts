@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { getBalance } from "@/lib/xrpl";
 import type { PoolHealth } from "@/types/fund";
 
 function computePoolHealth(
@@ -52,8 +51,11 @@ export async function GET(
       );
     }
 
-    // Get on-chain pool balance
-    const poolBalance = await getBalance(fund.fundWalletAddress);
+    // Pool balance = sum of all recorded contributions (ignores faucet activation funds)
+    const poolBalance = fund.members.reduce(
+      (sum, m) => sum + m.totalContributed,
+      0
+    );
 
     const activeMembers = fund.members.filter((m) => m.status === "active");
     const pendingMembers = fund.members.filter((m) => m.status === "pending");
