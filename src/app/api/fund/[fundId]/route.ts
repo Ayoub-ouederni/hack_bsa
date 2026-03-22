@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { getAvailableBalance } from "@/lib/xrpl";
+import { getBalance } from "@/lib/xrpl";
 import type { PoolHealth } from "@/types/fund";
 
 function computePoolHealth(
@@ -53,7 +53,7 @@ export async function GET(
     }
 
     // Get on-chain pool balance
-    const poolBalance = await getAvailableBalance(fund.fundWalletAddress);
+    const poolBalance = await getBalance(fund.fundWalletAddress);
 
     const activeMembers = fund.members.filter((m) => m.status === "active");
     const pendingMembers = fund.members.filter((m) => m.status === "pending");
