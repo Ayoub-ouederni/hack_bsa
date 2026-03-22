@@ -74,7 +74,15 @@ export async function POST(
       );
     }
 
-    // 5. Verify voter's signer address matches
+    // 5. Verify voter has contributed to the fund
+    if (member.totalContributed <= 0) {
+      return NextResponse.json(
+        { error: "You must contribute to the fund before you can vote" },
+        { status: 403 }
+      );
+    }
+
+    // 6. Verify voter's signer address matches
     if (member.signerAddress !== signerAddress) {
       return NextResponse.json(
         { error: "Signer address does not match member record" },
