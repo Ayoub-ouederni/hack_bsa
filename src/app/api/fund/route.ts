@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       attempts++;
     }
 
-    // 4. Create fund in database
+    // 4. Create fund in database with organizer as first member
     const fund = await prisma.fund.create({
       data: {
         name: input.name,
@@ -69,6 +69,13 @@ export async function POST(request: NextRequest) {
         requestCapMultiplier: FUND_RULES.requestCapMultiplier,
         maxPoolPercent: FUND_RULES.maxPoolPercent,
         inviteCode,
+        members: {
+          create: {
+            walletAddress: input.organizerAddress,
+            signerAddress: input.organizerAddress,
+            displayName: "Organizer",
+          },
+        },
       },
     });
 

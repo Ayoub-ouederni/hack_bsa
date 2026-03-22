@@ -111,11 +111,27 @@ export async function getTxHistory(
   });
 }
 
-const BASE_RESERVE_DROPS = 10_000_000;
-const OWNER_RESERVE_DROPS = 2_000_000;
+export async function getLedgerReserves(): Promise<{
+  baseReserveDrops: number;
+  ownerReserveDrops: number;
+}> {
+  const client = await getClient();
+  const response = await client.request({ command: "server_state" });
+  const state = response.result.state;
+  const validatedLedger =
+    "validated_ledger" in state ? state.validated_ledger : undefined;
+  // server_state returns reserves in XRP, convert to drops
+  const baseReserveXrp = validatedLedger?.reserve_base ?? 10;
+  const ownerReserveXrp = validatedLedger?.reserve_inc ?? 2;
+  return {
+    baseReserveDrops: baseReserveXrp * 1_000_000,
+    ownerReserveDrops: ownerReserveXrp * 1_000_000,
+  };
+}
 
-export function calculateReserve(ownerCount: number): number {
-  return BASE_RESERVE_DROPS + ownerCount * OWNER_RESERVE_DROPS;
+export async function calculateReserve(ownerCount: number): Promise<number> {
+  const { baseReserveDrops, ownerReserveDrops } = await getLedgerReserves();
+  return baseReserveDrops + ownerCount * ownerReserveDrops;
 }
 
 export async function getAvailableBalance(address: string): Promise<number> {
@@ -123,7 +139,7 @@ export async function getAvailableBalance(address: string): Promise<number> {
   if (!info) return 0;
 
   const balance = Number(info.account_data.Balance);
-  const reserve = calculateReserve(info.account_data.OwnerCount);
+  const reserve = await calculateReserve(info.account_data.OwnerCount);
   return Math.max(0, balance - reserve);
 }
 

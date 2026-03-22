@@ -1,7 +1,7 @@
 import type { EscrowCreate, EscrowFinish, EscrowCancel } from "xrpl";
 import { isValidClassicAddress, Wallet } from "xrpl";
 import { getClient } from "./client";
-import { getAccountSequence, getAvailableBalance } from "./account";
+import { getAccountSequence, getAvailableBalance, getLedgerReserves } from "./account";
 import { isValidConditionHex, isValidFulfillmentHex } from "./conditions";
 import { calculateMultiSignFee, BASE_FEE_DROPS } from "./payment";
 
@@ -12,8 +12,6 @@ const LEDGER_OFFSET_ESCROW = 20;
 const LEDGER_OFFSET_ESCROW_FINISH = 75;
 
 const DEFAULT_ESCROW_EXPIRY_SECONDS = 600;
-
-const OWNER_RESERVE_DROPS = 2_000_000;
 
 const MIN_ESCROW_EXPIRY_SECONDS = 10;
 
@@ -131,7 +129,8 @@ export async function canCreateEscrow(
   amountDrops: number
 ): Promise<{ canCreate: boolean; availableDrops: number }> {
   const available = await getAvailableBalance(fundWalletAddress);
-  const totalNeeded = amountDrops + OWNER_RESERVE_DROPS + BASE_FEE_DROPS;
+  const { ownerReserveDrops } = await getLedgerReserves();
+  const totalNeeded = amountDrops + ownerReserveDrops + BASE_FEE_DROPS;
   return {
     canCreate: available >= totalNeeded,
     availableDrops: available,

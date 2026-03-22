@@ -95,7 +95,7 @@ export function PoolStats({
           <StatItem
             icon={<Vote className="h-4 w-4" />}
             label="Votes Needed"
-            value={`${quorumRequired} / ${memberCount}`}
+            value={memberCount > 0 ? `${quorumRequired} / ${memberCount}` : "—"}
             delay={0.1}
           />
           <StatItem
