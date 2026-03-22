@@ -99,3 +99,34 @@ export type {
   CancelEscrowParams,
   CancelEscrowResult,
 } from "./escrow";
+
+export {
+  setupSignerList,
+  addSigner,
+  removeSigner,
+  combineSignatures,
+  submitMultiSigned,
+  signForMultiSign,
+} from "./multisig";
+
+export type {
+  SignerEntry,
+  SetupSignerListParams,
+  SetupSignerListResult,
+  AddSignerParams,
+  RemoveSignerParams,
+  SubmitMultiSignedResult,
+} from "./multisig";
+
+export {
+  mintMembershipNFT,
+  verifyMembership,
+  burnMembershipNFT,
+} from "./nft";
+
+export type {
+  MintMembershipNFTParams,
+  MintMembershipNFTResult,
+  BurnMembershipNFTParams,
+  BurnMembershipNFTResult,
+} from "./nft";
